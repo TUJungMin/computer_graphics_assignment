@@ -1,7 +1,7 @@
 ﻿  1장_2번.cpp
-C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장_2번.cpp(71,34): warning C4326: 'main'의 반환 형식이 'int'이어야 하는데 'void'입니다.
-C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장_2번.cpp(122,79): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장_2번.cpp(122,65): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장_2번.cpp(123,79): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장_2번.cpp(123,65): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장_2번.cpp(78,34): warning C4326: 'main'의 반환 형식이 'int'이어야 하는데 'void'입니다.
+C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장_2번.cpp(129,79): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장_2번.cpp(129,65): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장_2번.cpp(130,79): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장_2번.cpp(130,65): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   컴퓨터그래픽스.vcxproj -> C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\x64\Debug\컴퓨터그래픽스.exe

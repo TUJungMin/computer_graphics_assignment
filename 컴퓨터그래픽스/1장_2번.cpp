@@ -6,7 +6,6 @@
 #include <time.h>
 #include <utility>
 
-
 using namespace std;
 struct Point {
 	float x;
@@ -23,8 +22,6 @@ struct Rect {
 int windowXSize = 800;
 int windowYSize = 800;
 Rect rect[4];
-
-
 void makeRect(Rect* rect)
 {
 	rect[0].LD.x = rect[0].size - windowXSize / 2;
@@ -47,17 +44,27 @@ void makeRect(Rect* rect)
 	rect[3].RT.x = 1200 - rect[3].size;
 	rect[3].RT.y = rect[3].size;
 }
-bool Rectin(Point LD, Point RT, int x, int y);
-
+bool Rectin(Point LD, Point RT, int x, int y)
+{
+	if ((LD.x < x && x < RT.x) && (RT.y < y && y < LD.y)) {
+		return false;
+	}
+	else return true;
+}
 GLvoid drawScene();//--- 콜백 함수: 그리기 콜백 함수 {  // 바탕색을 ‘blue’ 로 지정
-
 GLvoid Reshape(int w, int h) {//--- 콜백 함수: 다시 그리기 콜백 함수 {
 	glViewport(0, 0, w, h);
 	windowXSize = w;
 	windowYSize = h;
 }
+pair<float, float> ConvertWindowToGL_X(int windowX, int windowY)
+{
+	float glX = ((float)windowX - (float)windowXSize / 2.0f) / ((float)windowXSize / 2.0f);
+	float glY = (((float)windowYSize / 2.0f) - (float)windowY) / ((float)windowYSize / 2.0f);
 
-pair<float, float> ConvertWindowToGL_X(int windowX, int windowY);
+
+	return make_pair(glX, glY);
+}
 
 
 GLvoid Keyboard(unsigned char key, int x, int y);
@@ -125,8 +132,8 @@ GLvoid drawScene() {//--- 콜백 함수: 그리기 콜백 함수 {
 		rect[i].LDGL.y = glCoordsLD.second;
 		rect[i].RTGL.x = glCoordsRT.first;
 		rect[i].RTGL.y = glCoordsRT.second;
-		glRectf(rect[i].LDGL.x, rect[i].LDGL.y, rect[i].RTGL.x, rect[i].RTGL.y);
 		glColor3f(rect[i].r, rect[i].g, rect[i].b);
+		glRectf(rect[i].LDGL.x, rect[i].LDGL.y, rect[i].RTGL.x, rect[i].RTGL.y);
 	}
 	glutSwapBuffers(); // 화면에 출력하기
 }
@@ -164,6 +171,36 @@ GLvoid Mouse(int button, int state, int x, int y)
 		}
 			
 	}
+
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+	{
+		if ((rect[0].LD.x < x && x < rect[0].RT.x) && (rect[0].RT.y < y && y < rect[0].LD.y)) {
+			rect[0].r = (rand() % 256) / 256.0f;
+			rect[0].g = (rand() % 256) / 256.0f;
+			rect[0].b = (rand() % 256) / 256.0f;
+		}
+		else if ((rect[1].LD.x < x && x < rect[1].RT.x) && (rect[1].RT.y < y && y < rect[1].LD.y)) {
+			rect[1].r = (rand() % 256) / 256.0f;
+			rect[1].g = (rand() % 256) / 256.0f;
+			rect[1].b = (rand() % 256) / 256.0f;
+		}
+		else if ((rect[2].LD.x < x && x < rect[2].RT.x) && (rect[2].RT.y < y && y < rect[2].LD.y)) {
+			rect[2].r = (rand() % 256) / 256.0f;
+			rect[2].g = (rand() % 256) / 256.0f;
+			rect[2].b = (rand() % 256) / 256.0f;
+		}
+		else if ((rect[3].LD.x < x && x < rect[3].RT.x) && (rect[3].RT.y < y && y < rect[3].LD.y)) {
+			rect[3].r = (rand() % 256) / 256.0f;
+			rect[3].g = (rand() % 256) / 256.0f;
+			rect[3].b = (rand() % 256) / 256.0f;
+		}
+		else
+		{
+			red = (rand() % 256) / 256.0f;
+			green = (rand() % 256) / 256.0f;
+			blue = (rand() % 256) / 256.0f;
+		}
+	}
 }
 GLvoid Keyboard(unsigned char key, int x, int y)
 {
@@ -185,19 +222,5 @@ GLvoid Timer(int val)
 	glutTimerFunc(17, Timer, 1);
 }
 
-pair<float, float> ConvertWindowToGL_X(int windowX, int windowY)
-{
-	float glX = ((float)windowX - (float)windowXSize / 2.0f) / ((float)windowXSize / 2.0f);
-	float glY = (((float)windowYSize / 2.0f) - (float)windowY) / ((float)windowYSize / 2.0f);
 
 
-	return make_pair(glX, glY);
-}
-
-bool Rectin(Point LD,Point RT, int x, int y)
-{
-	if ((LD.x < x && x < RT.x) && (RT.y < y && y < LD.y)) {
-		return false;
-	}
-	else return true;
-}
