@@ -21,5 +21,8 @@
     <ClCompile Include="1장_2번.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="1장_3번.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
