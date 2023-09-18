@@ -142,32 +142,32 @@ GLvoid Mouse(int button, int state, int x, int y)
 	if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
 	{
 		if (Rectin(rect[0].LD, rect[0].RT, x, y) == FALSE) {
-			rect[0].size++;
+			rect[0].size+= 2;
 		}
 		else if (Rectin(rect[1].LD, rect[1].RT, x, y) == FALSE) {
-			rect[1].size++;
+			rect[1].size+= 2;
 		}
 		else if (Rectin(rect[2].LD, rect[2].RT, x, y) == FALSE) {
-			rect[2].size++;
+			rect[2].size+= 2;
 		}
 		else if (Rectin(rect[3].LD, rect[3].RT, x, y) == FALSE) {
-			rect[3].size++;
+			rect[3].size+= 2;
 		}
 		else if ((0 < x && x < 400) && (0 < y && y < 400) && Rectin(rect[0].LD, rect[0].RT, x, y))
 		{
-			rect[0].size--;
+			rect[0].size-= 2;
 		}
 		else if ((400 < x && x < 800) && (0 < y && y < 400) && Rectin(rect[1].LD, rect[1].RT, x, y))
 		{
-			rect[1].size--;
+			rect[1].size-= 2;
 		}
 		else if ((0 < x && x < 400) && (400 < y && y < 800) && Rectin(rect[2].LD, rect[2].RT, x, y))
 		{
-			rect[2].size--;
+			rect[2].size-= 2;
 		}
 		else if ((400 < x && x < 800) && (400 < y && y < 800) && Rectin(rect[3].LD, rect[3].RT, x, y))
 		{
-			rect[3].size--;
+			rect[3].size-= 2;
 		}
 			
 	}
