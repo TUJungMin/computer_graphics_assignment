@@ -1,0 +1,8 @@
+pair<float, float> ConvertWindowToGL_X(int windowX, int windowY)
+{
+	float glX = ((float)windowX - (float)windowXSize / 2.0f) / ((float)windowXSize / 2.0f);
+	float glY = (((float)windowYSize / 2.0f) - (float)windowY) / ((float)windowYSize / 2.0f);
+
+
+	return make_pair(glX, glY);
+}

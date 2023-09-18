@@ -39,7 +39,8 @@ void makeRect(vector <Rect>* rect, int& value)
 	temp.r = (rand() % 256) / 256.0f;
 	temp.g = (rand() % 256) / 256.0f;
 	temp.b = (rand() % 256) / 256.0f;
-	temp.LD.x = rand() & (windowXSize - 100); temp.LD.y = rand() & (windowYSize - 100);
+	
+	temp.LD.x = rand() & (windowXSize - 100); temp.LD.y = rand() & windowYSize + 100;
 	temp.RT.x = temp.LD.x + 100; temp.RT.y = temp.LD.y - 100;
 	pair<float, float> glCoordsLD = ConvertWindowToGL_X(temp.LD.x, temp.LD.y);
 	pair<float, float> glCoordsRT = ConvertWindowToGL_X(temp.RT.x, temp.RT.y);
@@ -113,7 +114,7 @@ void main(int argc, char** argv) {//--- 윈도우 출력하고 콜백함수 설정 { //--- 윈
 	glutMouseFunc(Mouse);
 	glutMotionFunc(Motion);
 	glutKeyboardFunc(Keyboard);// 다시 그리기 함수 지정
-	
+
 	glutMainLoop(); // 이벤트 처리 시작 }
 }
 
@@ -142,11 +143,27 @@ GLvoid Mouse(int button, int state, int x, int y)
 			}
 
 		}
-	
-		
+
+
 	}
 	else
 		left_button = false;
+	vector<int> RectinNum;
+	if (left_button) {
+		for (int i = 0; i < rect.size(); ++i) {
+			if (Rectin(rect[i].LD, rect[i].RT, x, y) == false) {
+				RectinNum.push_back(i);
+				for (int j = i + 1; j < rect.size(); ++j) {
+					if (Rectin(rect[j].LD, rect[j].RT, x, y) == false) {
+						RectinNum.push_back(j);
+					}
+
+				}
+				break;
+			}
+		}
+		SelectNum = RectinNum.back();
+	}
 }
 GLvoid Keyboard(unsigned char key, int x, int y)
 {
@@ -169,39 +186,26 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 
 GLvoid Motion(int x, int y)
 {
-	vector<int> RectinNum;
 
 
-	if (left_button) {
-		for (int i = 0; i < rect.size(); ++i) {
-			if (Rectin(rect[i].LD, rect[i].RT, x, y) == false) {
-				RectinNum.push_back(i);
-				for (int j = i + 1; j < rect.size(); ++j) {
-					if (Rectin(rect[j].LD, rect[j].RT, x, y) == false) {
-						RectinNum.push_back(j);
-					}
 
-				}
-				break;
-			}
-		}
-		SelectNum = RectinNum.back();
 
-		pair<float, float> glCoordsLD = ConvertWindowToGL_X(x - 50, y - 50);
-		pair<float, float> glCoordsRT = ConvertWindowToGL_X(x + 50, y + 50);
-		rect[SelectNum].LDGL.x = glCoordsLD.first;
-		rect[SelectNum].LDGL.y = glCoordsLD.second;
-		rect[SelectNum].RTGL.x = glCoordsRT.first;
-		rect[SelectNum].RTGL.y = glCoordsRT.second;
 
-		rect[SelectNum].LD.x = x - 50;
-		rect[SelectNum].LD.y = y + 50;
-		rect[SelectNum].RT.x = x + 50;
-		rect[SelectNum].RT.y = y - 50;
+	pair<float, float> glCoordsLD = ConvertWindowToGL_X(x - 50, y - 50);
+	pair<float, float> glCoordsRT = ConvertWindowToGL_X(x + 50, y + 50);
+	rect[SelectNum].LDGL.x = glCoordsLD.first;
+	rect[SelectNum].LDGL.y = glCoordsLD.second;
+	rect[SelectNum].RTGL.x = glCoordsRT.first;
+	rect[SelectNum].RTGL.y = glCoordsRT.second;
 
-	}
+	rect[SelectNum].LD.x = x - 50;
+	rect[SelectNum].LD.y = y + 50;
+	rect[SelectNum].RT.x = x + 50;
+	rect[SelectNum].RT.y = y - 50;
+
+
 	glutPostRedisplay(); // 화면을 다시 그리도록 요청
-	
+
 }
 
 
