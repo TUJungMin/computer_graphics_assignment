@@ -5,4 +5,4 @@ pair<float, float> ConvertWindowToGL_X(int windowX, int windowY)
 
 
 	return make_pair(glX, glY);
-}
+}	//opengl 변환 함수

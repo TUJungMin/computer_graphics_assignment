@@ -24,5 +24,13 @@
     <ClCompile Include="1장_3번.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="1장_4번.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\유용한 함수.txt">
+      <Filter>리소스 파일</Filter>
+    </Text>
   </ItemGroup>
 </Project>
