@@ -40,7 +40,7 @@ void makeRect(vector <Rect>* rect, int& value)
 	temp.g = (rand() % 256) / 256.0f;
 	temp.b = (rand() % 256) / 256.0f;
 	
-	temp.LD.x = rand() & (windowXSize - rect_size); temp.LD.y = rand() & (windowYSize- rect_size)+ rect_size;
+	temp.LD.x = rand() % (windowXSize - rect_size); temp.LD.y = rand() % (windowYSize- rect_size)+ rect_size;
 	temp.RT.x = temp.LD.x + 100; temp.RT.y = temp.LD.y - 100;
 	pair<float, float> glCoordsLD = ConvertWindowToGL_X(temp.LD.x, temp.LD.y);
 	pair<float, float> glCoordsRT = ConvertWindowToGL_X(temp.RT.x, temp.RT.y);
@@ -165,31 +165,9 @@ GLvoid Mouse(int button, int state, int x, int y)
 		SelectNum = RectinNum.back();
 	}
 }
-GLvoid Keyboard(unsigned char key, int x, int y)
-{
-
-	switch (key) {
-
-	case 'a':
-		if (rect.size() < 5) {
-			makeRect(&rect, value);
-		}
-		break;
-	case 'q':
-		glutLeaveMainLoop();
-		break;
-
-	}
-	glutPostRedisplay(); //--- 배경색이 바뀔 때마다 출력 콜백 함수를 호출하여 화면을 refresh 한다
-}
-
 
 GLvoid Motion(int x, int y)
 {
-
-
-
-
 	if (left_button) {
 		pair<float, float> glCoordsLD = ConvertWindowToGL_X(x - 50, y - 50);
 		pair<float, float> glCoordsRT = ConvertWindowToGL_X(x + 50, y + 50);
@@ -206,6 +184,25 @@ GLvoid Motion(int x, int y)
 
 	glutPostRedisplay(); // 화면을 다시 그리도록 요청
 
+}
+
+
+GLvoid Keyboard(unsigned char key, int x, int y)
+{
+
+	switch (key) {
+
+	case 'a':
+		if (rect.size() < 5) {
+			makeRect(&rect, value);
+		}
+		break;
+	case 'q':
+		glutLeaveMainLoop();
+		break;
+
+	}
+	glutPostRedisplay(); //--- 배경색이 바뀔 때마다 출력 콜백 함수를 호출하여 화면을 refresh 한다
 }
 
 

@@ -13,24 +13,44 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="1장">
+      <UniqueIdentifier>{950f5f31-bfd8-456c-9391-8eb20335cab5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="1장_1번.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>1장</Filter>
     </ClCompile>
     <ClCompile Include="1장_2번.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>1장</Filter>
     </ClCompile>
     <ClCompile Include="1장_3번.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>1장</Filter>
     </ClCompile>
     <ClCompile Include="1장_4번.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>1장</Filter>
+    </ClCompile>
+    <ClCompile Include="1장_5번.cpp">
+      <Filter>1장</Filter>
+    </ClCompile>
+    <ClCompile Include="1장-6번.cpp">
+      <Filter>1장</Filter>
+    </ClCompile>
+    <ClCompile Include="1장-7번.cpp">
+      <Filter>1장</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\유용한 함수.txt">
       <Filter>리소스 파일</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="vertex.glsl">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="fragment.glsl">
+      <Filter>리소스 파일</Filter>
+    </None>
   </ItemGroup>
 </Project>
