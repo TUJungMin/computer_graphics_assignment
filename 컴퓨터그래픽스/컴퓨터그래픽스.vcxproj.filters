@@ -39,6 +39,9 @@
     <ClCompile Include="1장-7번.cpp">
       <Filter>1장</Filter>
     </ClCompile>
+    <ClCompile Include="1장-8번.cpp">
+      <Filter>1장</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\유용한 함수.txt">
