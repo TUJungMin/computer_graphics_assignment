@@ -1,1 +1,17 @@
-﻿  컴퓨터그래픽스.vcxproj -> C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\x64\Debug\컴퓨터그래픽스.exe
+﻿  1장-9번.cpp
+C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장-9번.cpp(31,9): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장-9번.cpp(188,1): warning C4305: '+=': 'double'에서 'T'(으)로 잘립니다.
+          with
+          [
+              T=float
+          ]
+C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장-9번.cpp(219,34): warning C4326: 'main'의 반환 형식이 'int'이어야 하는데 'void'입니다.
+C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장-9번.cpp(223,28): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장-9번.cpp(223,21): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장-9번.cpp(262,10): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장-9번.cpp(263,11): warning C4244: '=': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장-9번.cpp(280,21): warning C4244: '=': 'int'에서 'GLfloat'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장-9번.cpp(282,22): warning C4244: '=': 'int'에서 'GLfloat'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장-9번.cpp(295,21): warning C4244: '=': 'int'에서 'GLfloat'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\1장-9번.cpp(297,22): warning C4244: '=': 'int'에서 'GLfloat'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  컴퓨터그래픽스.vcxproj -> C:\Users\곽정민\Desktop\컴퓨터 그래픽스\computer_graphics\컴퓨터그래픽스\x64\Debug\컴퓨터그래픽스.exe

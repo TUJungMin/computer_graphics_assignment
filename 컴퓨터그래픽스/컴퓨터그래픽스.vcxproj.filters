@@ -16,6 +16,9 @@
     <Filter Include="1장">
       <UniqueIdentifier>{950f5f31-bfd8-456c-9391-8eb20335cab5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="1장\glsl파일">
+      <UniqueIdentifier>{ccb396bb-2ea7-430f-a9e5-9346c63fb374}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="1장_1번.cpp">
@@ -39,8 +42,23 @@
     <ClCompile Include="1장-7번.cpp">
       <Filter>1장</Filter>
     </ClCompile>
+    <ClCompile Include="1장-7번 클래스사용-.cpp">
+      <Filter>1장</Filter>
+    </ClCompile>
     <ClCompile Include="1장-8번.cpp">
       <Filter>1장</Filter>
+    </ClCompile>
+    <ClCompile Include="1장-9번.cpp">
+      <Filter>1장</Filter>
+    </ClCompile>
+    <ClCompile Include="1장-10번.cpp">
+      <Filter>1장</Filter>
+    </ClCompile>
+    <ClCompile Include="1장-11번.cpp">
+      <Filter>1장</Filter>
+    </ClCompile>
+    <ClCompile Include="FileName.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -50,10 +68,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="vertex.glsl">
-      <Filter>리소스 파일</Filter>
+      <Filter>1장\glsl파일</Filter>
     </None>
     <None Include="fragment.glsl">
-      <Filter>리소스 파일</Filter>
+      <Filter>1장\glsl파일</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -1,5 +1,7 @@
-x64
-.vs
+.vscode/
+.vs/
+bin/
+obj/
 
 컴퓨터그래픽스/x64/Debug/vc143.idb
 *.obj

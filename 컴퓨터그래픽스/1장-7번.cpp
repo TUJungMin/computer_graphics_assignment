@@ -12,7 +12,13 @@
 #pragma comment(lib, "glew32")
 #pragma comment(lib, "glew32s")
 #define _CRT_SECURE_NO_WARNINGS //--- 프로그램 맨 앞에 선언할 것
-
+enum draw_mode {
+	DRAW_POINT = 0,
+	DRAW_LINE,
+	DRAW_TRIANGLE,
+	DRAW_RECT,
+	DRAW_NOTHING
+};
 using namespace std;
 using namespace glm;
 char* filetobuf(const char* file) {
@@ -38,21 +44,10 @@ using namespace std;
 GLvoid drawScene(GLvoid);
 GLvoid Reshape(int w, int h);
 GLvoid KeyBoardFunc(unsigned char key, int x, int y);
-float r = 0, g = 0, b = 1.0;
-
-enum DRAW_MODE {
-	DRAW_TRIANGLE,
-	DRAW_LINE,
-	DRAW_POINT,
-	DRAW_RECTANGLE,
-	NOTHING
-};
-
-
+int draw_num = 0;
 void make_vertexShaders();
 void make_fragmentShaders();
 GLuint make_shaderProgram();
-//void InitBuffer();
 GLvoid ClickFunc(int button, int state, int x, int y);
 GLvoid TimerFunc(int value);
 //--- 필요한 변수 선언
@@ -62,200 +57,123 @@ GLuint fragmentShader;
 GLint result;
 GLchar errorLog[512];
 
-pair<float, float> ConvertWinToGL(int x, int y) {
-	float mx = ((float)x - (WIDTH / 2)) / (WIDTH / 2); //gl좌표계로 변경
-	float my = -((float)y - (HEIGHT / 2)) / (HEIGHT / 2); //gl좌표계로 변경
-	return { mx, my };
-}
+GLuint vao, vbo2;
 
-class Triangle {
-	vec3 m_vertex[3];
-	GLuint m_vbo;
-public:
-	Triangle() {
-		m_vertex[0].z = m_vertex[1].z = m_vertex[2].z = 0;
-		m_vertex[0].x = 0.0f;
-		m_vertex[0].y = 2.0f;
+vec3 Line_vertex[2] = { {-0.2f,0.0f,0.0f },{0.2f,0.0f,0.0f} };
+vec3 Triangle_vertex[3] = { {0.0f,0.2f,0.0f },{-0.17f,-0.1f,0.0f},{0.17f,-0.1f,0.0f} };
+vec3 Rect_vertex[4] = { {-0.1f,-0.15f,0.0f },{0.1f,-0.15f,0.0f},{-0.1f,0.15f,0.0f},{0.1f,0.15f,0.0f} };
+vec3 Point_vertex = { 0.0f,0.0f,0.0f };
 
-		m_vertex[1].x = -1.7f;
-		m_vertex[1].y = -1.0f;
 
-		m_vertex[2].x = 1.7f;
-		m_vertex[2].y = -1.0f;
-		Scale(0.1f);
-	}
-private:
-	void Scale(float sValue) {
-		for (int i = 0; i < 3; i++) {
-			m_vertex[i].x *= sValue;
-			m_vertex[i].y *= sValue;
-			m_vertex[i].z *= sValue;
-		}
-	}
-public:
-	void InitVbo() {
-		glGenBuffers(1, &m_vbo);//vertex buffer object 생성
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);//바인딩할 객체
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * 3, m_vertex, GL_STATIC_DRAW);//m_vertex를 size만큼 위에 바인딩 한다는 vbo에 매칭?
-	}
-	void Draw(vec3 pos, vec3 color) {
-		int vertexAttribLoc = glGetAttribLocation(shaderProgramID, "vPos");//세이더에서 위치 찾기
-		glEnableVertexAttribArray(vertexAttribLoc);//세이더에서 이 특성 사용한다고 알림
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);//그릴 객체 바인딩
-		glVertexAttribPointer(vertexAttribLoc, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);// 그리기, 3개씩 그릴거고 점 하나당 사용할 크기 (점 3개니까 vec3), 시작 위치
 
-		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");//유니폼 위치 찾기
-		glUniform3f(colorUniformLoc, color.x, color.y, color.z);//데이터 넘기기
-		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");//위와 같음
-		glUniform3f(posUniformLoc, pos.x, pos.y, pos.z);//얘도
+vec3 move_Pos;
 
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-	}
-};
-class Line {
-	vec3 m_vertex[2];
-	GLuint m_vbo;
-public:
-	Line() {
-		m_vertex[0].z = m_vertex[1].z = 0;
-		m_vertex[0].x = -2.0f;
-		m_vertex[0].y = 0.0f;
-
-		m_vertex[1].x = 2.0f;
-		m_vertex[1].y = 0.0f;
-
-		Scale(0.1f);
-	}
-public:
-	void Scale(float sValue) {
-		for (int i = 0; i < 2; i++) {
-			m_vertex[i].x *= sValue;
-			m_vertex[i].y *= sValue;
-		}
-	}
-	void InitVbo() {
-		glGenBuffers(1, &m_vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * 2, m_vertex, GL_STATIC_DRAW);
-	}
-	void Draw(vec3 pos, vec3 color) {
-		int vertexAttribLoc = glGetAttribLocation(shaderProgramID, "vPos");
-		glEnableVertexAttribArray(vertexAttribLoc);
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-		glVertexAttribPointer(vertexAttribLoc, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);
-
-		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
-		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
-		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
-		glUniform3f(posUniformLoc, pos.x, pos.y, pos.z);
-
-		glLineWidth(10.0f);
-		glDrawArrays(GL_LINES, 0, 2);
-	}
-};
-class Point {
-	vec3 m_vertex;
-	GLuint m_vbo;
-public:
-	Point() {
-		m_vertex.z = 0;
-		m_vertex.x = 0.0f;
-		m_vertex.y = 0.0f;
-	}
-public:
-	void InitVbo() {
-		glGenBuffers(1, &m_vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vec3), &m_vertex, GL_STATIC_DRAW);
-	}
-	void Draw(vec3 pos, vec3 color) {
-		int vertexAttribLoc = glGetAttribLocation(shaderProgramID, "vPos");
-		glEnableVertexAttribArray(vertexAttribLoc);
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-		glVertexAttribPointer(vertexAttribLoc, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);
-
-		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
-		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
-		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
-		glUniform3f(posUniformLoc, pos.x, pos.y, pos.z);
-		glPointSize(10.0f);
-		glDrawArrays(GL_POINTS, 0, 1);
-	}
-};
-class Rect {
-	vec3 m_vertex[4];
+struct Point {
+	vec3 move_coord;
+	vec3 color;
 	GLuint m_vbo;
 
-public:
-	Rect() {
-		m_vertex[0].z = m_vertex[1].z = m_vertex[2].z = m_vertex[3].z = 0;
-
-		// 정점 좌표 설정
-		m_vertex[0].x = -1.0f;
-		m_vertex[0].y = -1.0f;
-
-		m_vertex[1].x = 1.0f;
-		m_vertex[1].y = -1.0f;
-
-		m_vertex[2].x = -1.0f;
-		m_vertex[2].y = 1.0f;
-
-		m_vertex[3].x = 1.0f;
-		m_vertex[3].y = 1.0f;
-
-		Scale(0.1f);
-	}
-private:
-	void Scale(float sValue) {
-		for (int i = 0; i < 4; i++) {
-			m_vertex[i].x *= sValue;
-			m_vertex[i].y *= sValue;
-			m_vertex[i].z *= sValue;
-		}
-	}
-
-public:
 	void InitVbo() {
 		glGenBuffers(1, &m_vbo); // VBO 생성
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
 		// VBO에 데이터 복사
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * 4, m_vertex, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Point_vertex), &Point_vertex, GL_STATIC_DRAW);
 	}
-
-	void Draw(vec3 pos, vec3 color) {
+	void Draw() {
+		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 		int vertexAttribLoc = glGetAttribLocation(shaderProgramID, "vPos");
 		glEnableVertexAttribArray(vertexAttribLoc);
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 		glVertexAttribPointer(vertexAttribLoc, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);
-
 		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
 		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
 		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
-		glUniform3f(posUniformLoc, pos.x, pos.y, pos.z);
+		glUniform3f(posUniformLoc, move_Pos.x + move_coord.x, move_Pos.y + move_coord.y, 0);		//wasd로 움직이는 거리+초기좌표
 		glPointSize(10.0f);
+		glDrawArrays(GL_POINTS, 0, 1);
+
+	}
+};
+
+struct Line {
+
+	vec3 move_coord;
+	vec3 color;
+	GLuint m_vbo;
+
+	void InitVbo() {
+		glGenBuffers(1, &m_vbo); // VBO 생성
+		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
+		// VBO에 데이터 복사
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Line_vertex), Line_vertex, GL_STATIC_DRAW);
+	}
+	void Draw() {
+		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+		int vertexAttribLoc = glGetAttribLocation(shaderProgramID, "vPos");
+		glEnableVertexAttribArray(vertexAttribLoc);
+		glVertexAttribPointer(vertexAttribLoc, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);
+		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
+		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
+		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
+		glUniform3f(posUniformLoc, move_Pos.x + move_coord.x, move_Pos.y + move_coord.y, 0);		//wasd로 움직이는 거리+초기좌표
+		glLineWidth(10.0f);
+		glDrawArrays(GL_LINES, 0, 2);
+
+	}
+};
+
+struct Triangle {
+	vec3 move_coord;
+	vec3 color;
+	GLuint m_vbo;
+
+	void InitVbo() {
+		glGenBuffers(1, &m_vbo); // VBO 생성
+		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
+		// VBO에 데이터 복사
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Triangle_vertex), Triangle_vertex, GL_STATIC_DRAW);
+	}
+	void Draw() {
+		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+		int vertexAttribLoc = glGetAttribLocation(shaderProgramID, "vPos");
+		glEnableVertexAttribArray(vertexAttribLoc);
+		glVertexAttribPointer(vertexAttribLoc, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);
+		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
+		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
+		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
+		glUniform3f(posUniformLoc,  move_coord.x, move_coord.y, 0);		//wasd로 움직이는 거리+초기좌표
+		glLineWidth(10.0f);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+
+	}
+
+};
+
+struct Rect {
+	vec3 move_coord;
+	vec3 color;
+	GLuint m_vbo;
+
+	void InitVbo() {
+		glGenBuffers(1, &m_vbo); // VBO 생성
+		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
+		// VBO에 데이터 복사
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Rect_vertex), Rect_vertex, GL_STATIC_DRAW);
+	}
+	void Draw() {
+		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+		int vertexAttribLoc = glGetAttribLocation(shaderProgramID, "vPos");
+		glEnableVertexAttribArray(vertexAttribLoc);
+		glVertexAttribPointer(vertexAttribLoc, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);
+		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
+		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
+		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
+		glUniform3f(posUniformLoc, move_coord.x, move_coord.y, 0);		//wasd로 움직이는 거리+초기좌표
+		glLineWidth(10.0f);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glDrawArrays(GL_TRIANGLES, 1, 3);
 	}
-};
 
-struct ShapeData {
-	vec3 m_pos;
-	vec3 m_color;
-	ShapeData() {
-		m_pos.x = m_pos.y = m_pos.z = 0;
-		m_color.x = m_color.y = m_color.z = 0;
-	}
-	ShapeData(vec3 pos, vec3 color) {
-		m_pos = pos;
-		m_color = color;
-	}
-	void Move(float dx, float dy)
-	{
-		m_pos.x += dx;
-		m_pos.y += dy;
-	}
 };
-
 Triangle g_TriangleShape;
 
 Line g_lineShape;
@@ -263,16 +181,32 @@ Line g_lineShape;
 Point g_pointShape;
 
 Rect g_rectShape;
+draw_mode g_currentDrawMode = DRAW_NOTHING;
+vector <Triangle> g_triangles;
+vector <Point> g_points;
+vector <Line> g_lines;
+vector <Rect> g_rects;
+//void InitBuffer(vec3& vertex, GLuint vbo)
+//{
+//	glGenBuffers(1, &vbo); //--- 2개의 VBO를 지정하고 할당하기
+//	//--- 1번째 VBO를 활성화하여 바인드하고, 버텍스 속성 (좌표값)을 저장
+//	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+//
+//	//--- triShape 배열의 사이즈: 9 * float
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), &vertex, GL_STATIC_DRAW);
+//	GLint vertexAttribLoc = glGetAttribLocation(shaderProgramID, "vPos");
+//	//--- 좌표값을 attribute 인덱스 0번에 명시한다: 버텍스 당 3* float
+//	glVertexAttribPointer(vertexAttribLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), 0);
+//	//--- attribute 인덱스 0번을 사용가능하게 함
+//	glEnableVertexAttribArray(vertexAttribLoc);
+//
+//}
 
-vector<ShapeData> g_triangles;
-vector<ShapeData> g_points;
-vector<ShapeData> g_lines;
-vector<ShapeData> g_rects;
-
-
-DRAW_MODE g_currentDrawMode = NOTHING;
-
-int draw_num = 0;
+pair<float, float> ConvertWinToGL(int x, int y) {
+	float mx = ((float)x - (WIDTH / 2)) / (WIDTH / 2); //gl좌표계로 변경
+	float my = -((float)y - (HEIGHT / 2)) / (HEIGHT / 2); //gl좌표계로 변경
+	return { mx, my };
+}
 void main(int argc, char** argv) {//--- 윈도우 출력하고 콜백함수 설정
 	glutInit(&argc, argv); // glut 초기화
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA); // 디스플레이 모드 설정
@@ -287,36 +221,36 @@ void main(int argc, char** argv) {//--- 윈도우 출력하고 콜백함수 설정
 	}
 	else
 		cout << "GLEW Initialized" << endl;
-
 	make_vertexShaders(); //--- 버텍스 세이더 만들기
 	make_fragmentShaders(); //--- 프래그먼트 세이더 만들기
 	shaderProgramID = make_shaderProgram();
-	g_TriangleShape.InitVbo();
-	g_lineShape.InitVbo();
-	g_pointShape.InitVbo();
-	g_rectShape.InitVbo();
-	glutKeyboardFunc(KeyBoardFunc);
-	glutTimerFunc(16, TimerFunc, 0);
-	glutDisplayFunc(drawScene); // 출력 함수의 지정
-	glutReshapeFunc(Reshape); // 다시 그리기 함수 지정
 	glutMouseFunc(ClickFunc);
+	glutDisplayFunc(drawScene); //--- 출력 콜백 함수
+	glutReshapeFunc(Reshape);
+	glutKeyboardFunc(KeyBoardFunc);
 	glutMainLoop(); // 이벤트 처리 시작
 }
 
-GLvoid drawScene() { //--- 콜백 함수: 그리기 콜백 함수
-	glClearColor(0, 0, 1, 1);
-	glClear(GL_COLOR_BUFFER_BIT); // 설정된 색으로 전체를 칠하기
-	glUseProgram(shaderProgramID);
-	for (auto& t : g_triangles)
-		g_TriangleShape.Draw(t.m_pos, t.m_color);
-	for (auto& t : g_lines)
-		g_lineShape.Draw(t.m_pos, t.m_color);
-	for (auto& t : g_points)
-		g_pointShape.Draw(t.m_pos, t.m_color);
-	for (auto& t : g_rects)
-		g_rectShape.Draw(t.m_pos, t.m_color);
+GLvoid drawScene()
+{
+	//--- 변경된 배경색 설정
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-	glutSwapBuffers(); // 화면에 출력하기
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//--- 렌더링 파이프라인에 세이더 불러오기
+	
+	
+
+	for (auto& t : g_lines)
+		t.Draw();
+	for (auto& t : g_points)
+		t.Draw();
+	for (auto& t : g_triangles)
+		t.Draw();
+	for (auto& t : g_rects)
+		t.Draw();
+
+	glutSwapBuffers(); //--- 화면에 출력하기
 }
 
 GLvoid Reshape(int w, int h) {//--- 콜백 함수: 다시 그리기 콜백 함수
@@ -324,6 +258,100 @@ GLvoid Reshape(int w, int h) {//--- 콜백 함수: 다시 그리기 콜백 함수
 	HEIGHT = h;
 	glViewport(0, 0, w, h);
 }
+
+
+
+GLvoid KeyBoardFunc(unsigned char key, int x, int y)
+{
+	switch (key)
+	{
+	case 'p':
+		g_currentDrawMode = DRAW_POINT;
+		break;
+	case 't':
+		g_currentDrawMode = DRAW_TRIANGLE;
+		break;
+	case 'r':
+		g_currentDrawMode = DRAW_RECT;
+		break;
+	case 'l':
+		g_currentDrawMode = DRAW_LINE;
+		break;
+	case 'w':
+		move_Pos.y += 0.1f;
+		break;
+	case 's':
+		move_Pos.y -= 0.1f;
+		break;
+	case 'a':
+		move_Pos.x -= 0.1f;
+		break;
+	case 'd':
+		move_Pos.x += 0.1f;
+		break;
+	case 'c':
+		g_lines.clear();
+		g_rects.clear();
+		g_triangles.clear();
+		g_points.clear();
+		draw_num = 0;
+		g_currentDrawMode = DRAW_NOTHING;
+	default:
+		break;
+	}
+	glutPostRedisplay();
+}
+
+GLvoid ClickFunc(int button, int state, int x, int y)
+{
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		random_device rd;
+		default_random_engine dre(rd());
+		uniform_real_distribution<float> urd(0, 1);
+		auto glPos = ConvertWinToGL(x, y);
+		if (draw_num < 10) {
+			switch (g_currentDrawMode)
+			{
+			case DRAW_LINE:
+				Line NEW_LINE;
+				NEW_LINE.move_coord = vec3(glPos.first, glPos.second, 0.0f);		// 마우스 좌표 입력
+				NEW_LINE.color = vec3(urd(dre), urd(dre), urd(dre));				//rgb값 넣기
+				NEW_LINE.InitVbo();
+				g_lines.push_back(NEW_LINE);
+				draw_num++;
+				break;
+
+			case DRAW_POINT:
+				Point NEW_POINT;
+				NEW_POINT.move_coord = vec3(glPos.first, glPos.second, 0.0f);		// 마우스 좌표 입력
+				NEW_POINT.color = vec3(urd(dre), urd(dre), urd(dre));				//rgb값 넣기
+				NEW_POINT.InitVbo();
+				g_points.push_back(NEW_POINT);
+				draw_num++;
+				break;
+			case DRAW_TRIANGLE:
+				Triangle NEW_TRIANGLE;
+				NEW_TRIANGLE.move_coord = vec3(glPos.first, glPos.second, 0.0f);		// 마우스 좌표 입력
+				NEW_TRIANGLE.color = vec3(urd(dre), urd(dre), urd(dre));				//rgb값 넣기
+				NEW_TRIANGLE.InitVbo();
+				g_triangles.push_back(NEW_TRIANGLE);
+				draw_num++;
+				break;
+			case DRAW_RECT:
+				Rect NEW_RECT;
+				NEW_RECT.move_coord = vec3(glPos.first, glPos.second, 0.0f);		// 마우스 좌표 입력
+				NEW_RECT.color = vec3(urd(dre), urd(dre), urd(dre));				//rgb값 넣기
+				NEW_RECT.InitVbo();
+				g_rects.push_back(NEW_RECT);
+				draw_num++;
+				break;
+			}
+		}
+	}
+
+}
+
+
 
 void make_vertexShaders() {
 	GLchar* vertexSource;
@@ -371,6 +399,8 @@ void make_fragmentShaders() {
 
 GLuint make_shaderProgram() {
 	//vertex, frament shader가 이미 컴파일은 된 상황
+	//make_vertexShaders(); //--- 버텍스 세이더 만들기
+	//make_fragmentShaders(); //--- 프래그먼트 세이더 만들기
 	GLuint shaderID;
 	shaderID = glCreateProgram(); //--- 세이더 프로그램 만들기 - 두 세이더 붙어야됨, vertex - fragment는 짝이 맞아야됨
 	glAttachShader(shaderID, vertexShader); //--- 세이더 프로그램에 버텍스 세이더 붙이기
@@ -391,150 +421,4 @@ GLuint make_shaderProgram() {
 	//--- glUseProgram 함수를 호출하여 사용 할 특정 프로그램을 지정한다.
 	//--- 사용하기 직전에 호출할 수 있다.
 	return shaderID;
-}
-
-GLvoid ClickFunc(int button, int state, int x, int y)
-{
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-		random_device rd;
-		default_random_engine dre(rd());
-		uniform_real_distribution<float> urd(0, 1);
-		auto glPos = ConvertWinToGL(x, y);
-		if (draw_num < 10) {
-			switch (g_currentDrawMode)
-			{
-
-			case DRAW_TRIANGLE:
-				g_triangles.emplace_back(vec3(glPos.first, glPos.second, 0.0f), vec3(urd(dre), urd(dre), urd(dre)));
-				draw_num++;
-				break;
-			case DRAW_LINE:
-				g_lines.emplace_back(vec3(glPos.first, glPos.second, 0.0f), vec3(urd(dre), urd(dre), urd(dre)));
-				draw_num++;
-				break;
-			case DRAW_POINT:
-				g_points.emplace_back(vec3(glPos.first, glPos.second, 0.0f), vec3(urd(dre), urd(dre), urd(dre)));
-				draw_num++;
-				break;
-			case DRAW_RECTANGLE:
-				g_rects.emplace_back(vec3(glPos.first, glPos.second, 0.0f), vec3(urd(dre), urd(dre), urd(dre)));
-				draw_num++;
-			default:
-				break;
-
-			}
-		}
-	}
-	//glutPostRedisplay();
-}
-
-GLvoid TimerFunc(int value)
-{
-	switch (value)
-	{
-	case 0:
-	{
-		glutPostRedisplay();
-		glutTimerFunc(16, TimerFunc, 0);
-	}
-	break;
-	default:
-		break;
-	}
-}
-
-GLvoid KeyBoardFunc(unsigned char key, int x, int y)
-{
-	switch (key)
-	{
-	case 'W':
-	case 'w':
-	{
-		for (auto& t : g_triangles)
-			t.Move(0, 0.08f);
-		for (auto& t : g_lines)
-			t.Move(0, 0.08f);
-		for (auto& t : g_points)
-			t.Move(0, 0.08f);
-		for (auto& t : g_rects)
-			t.Move(0, 0.08f);
-	}
-	break;
-	case 's':
-	case 'S':
-	{
-		for (auto& t : g_triangles)
-			t.Move(0, -0.08f);
-		for (auto& t : g_lines)
-			t.Move(0, -0.08f);
-		for (auto& t : g_points)
-			t.Move(0, -0.08f);
-		for (auto& t : g_rects)
-			t.Move(0, -0.08f);
-	}
-	break;
-	case 'a':
-	case 'A':
-	{
-		for (auto& t : g_triangles)
-			t.Move(-0.08f, 0);
-		for (auto& t : g_lines)
-			t.Move(-0.08f, 0);
-		for (auto& t : g_points)
-			t.Move(-0.08f, 0);
-		for (auto& t : g_rects)
-			t.Move(-0.08f, 0);
-	}
-	break;
-	case 'd':
-	case 'D':
-	{
-		for (auto& t : g_triangles)
-			t.Move(0.08f, 0);
-		for (auto& t : g_lines)
-			t.Move(0.08f, 0);
-		for (auto& t : g_points)
-			t.Move(0.08f, 0);
-		for (auto& t : g_rects)
-			t.Move(0.08f, 0);
-	}
-	break;
-	case 'r':
-	case 'R':
-	{
-		g_currentDrawMode = DRAW_RECTANGLE;
-	}
-	break;
-	case 'p':
-	case 'P':
-	{
-		g_currentDrawMode = DRAW_POINT;
-	}
-	break;
-	case 't':
-	case 'T':
-	{
-		g_currentDrawMode = DRAW_TRIANGLE;
-	}
-	break;
-	case 'l':
-	case 'L':
-	{
-		g_currentDrawMode = DRAW_LINE;
-	}
-	break;
-
-	case 'c':
-	case 'C':
-		g_triangles.clear();
-		g_points.clear();
-		g_lines.clear();
-		g_rects.clear();
-		draw_num = 0;
-		g_currentDrawMode = NOTHING;
-		
-	break;
-	default:
-		break;
-	}
 }
