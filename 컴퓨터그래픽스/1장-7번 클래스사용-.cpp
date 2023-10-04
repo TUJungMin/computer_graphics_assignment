@@ -306,7 +306,7 @@ void main(int argc, char** argv) {//--- 윈도우 출력하고 콜백함수 설정
 }
 
 GLvoid drawScene() { //--- 콜백 함수: 그리기 콜백 함수
-	glClearColor(0, 0, 1, 1);
+	glClearColor(1, 1, 1, 1);
 	glClear(GL_COLOR_BUFFER_BIT); // 설정된 색으로 전체를 칠하기
 	glUseProgram(shaderProgramID);
 	for (auto& t : g_triangles)

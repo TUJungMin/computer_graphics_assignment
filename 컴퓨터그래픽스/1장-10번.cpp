@@ -57,7 +57,7 @@ struct cir_spiral {
 	GLfloat coord_x;
 	GLfloat coord_y;
 	GLfloat theta = 0;
-	int current_size = 0;;
+	int current_size = 0;
 };
 vector <cir_spiral> circle_spiral;
 bool button_p, button_l;
@@ -131,7 +131,7 @@ void make_sprial(int num)
 		cir_spiral temp;
 		temp.coord_x = glPos.first;
 		temp.coord_y = glPos.second;
-		temp.current_size = 1;
+		temp.current_size = 0;
 		circle_spiral.push_back(temp);
 	}
 }
@@ -177,15 +177,12 @@ GLvoid drawScene()
 {
 	//--- 변경된 배경색 설정
 	glClearColor(color.r, color.g, color.b,1.0f);
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//--- 렌더링 파이프라인에 세이더 불러오기
 	glUseProgram(shaderProgramID);
-
 	int vertexAttribLoc = glGetAttribLocation(shaderProgramID, "vPos");
 	glEnableVertexAttribArray(vertexAttribLoc);
 	glVertexAttribPointer(vertexAttribLoc, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);
-
 	for (int i = 0; i < circle_spiral.size(); i++) {
 		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
 		glUniform3f(posUniformLoc, circle_spiral[i].coord_x, circle_spiral[i].coord_y, 0);
@@ -199,11 +196,11 @@ GLvoid drawScene()
 		{
 			glLineWidth(5.0f);
 
-			for (int j = 0; j < circle_spiral[i].current_size - 1; ++j)
-			{
-				glDrawArrays(GL_LINES, j, 2);
+			//for (int j = 1; j < circle_spiral[i].current_size; ++j)
+			//{
+				glDrawArrays(GL_LINE_STRIP, 0, circle_spiral[i].current_size);
 
-			}
+			//}
 		}
 	}	//wasd로 움직이는 거리+초기좌표
 
@@ -354,7 +351,7 @@ GLvoid ClickFunc(int button, int state, int x, int y)
 {
 
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-		circle_spiral.clear();
+		//circle_spiral.clear();
 		change_color();
 		auto glPos = ConvertWinToGL(x, y);
 		cir_spiral temp;

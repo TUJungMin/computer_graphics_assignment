@@ -57,8 +57,11 @@
     <ClCompile Include="1장-11번.cpp">
       <Filter>1장</Filter>
     </ClCompile>
-    <ClCompile Include="FileName.cpp">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="1장-12번.cpp">
+      <Filter>1장</Filter>
+    </ClCompile>
+    <ClCompile Include="1장-13번.cpp">
+      <Filter>1장</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

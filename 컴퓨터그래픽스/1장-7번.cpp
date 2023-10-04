@@ -140,7 +140,7 @@ struct Triangle {
 		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
 		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
 		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
-		glUniform3f(posUniformLoc,  move_coord.x, move_coord.y, 0);		//wasd로 움직이는 거리+초기좌표
+		glUniform3f(posUniformLoc, move_Pos.x + move_coord.x, move_Pos.y + move_coord.y, 0);	//wasd로 움직이는 거리+초기좌표
 		glLineWidth(10.0f);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -167,7 +167,7 @@ struct Rect {
 		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
 		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
 		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
-		glUniform3f(posUniformLoc, move_coord.x, move_coord.y, 0);		//wasd로 움직이는 거리+초기좌표
+		glUniform3f(posUniformLoc, move_Pos.x + move_coord.x, move_Pos.y + move_coord.y, 0);		//wasd로 움직이는 거리+초기좌표
 		glLineWidth(10.0f);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glDrawArrays(GL_TRIANGLES, 1, 3);
@@ -314,7 +314,7 @@ GLvoid ClickFunc(int button, int state, int x, int y)
 			{
 			case DRAW_LINE:
 				Line NEW_LINE;
-				NEW_LINE.move_coord = vec3(glPos.first, glPos.second, 0.0f);		// 마우스 좌표 입력
+				NEW_LINE.move_coord = vec3(glPos.first-move_Pos.x, glPos.second-move_Pos.y, 0.0f);		// 마우스 좌표 입력
 				NEW_LINE.color = vec3(urd(dre), urd(dre), urd(dre));				//rgb값 넣기
 				NEW_LINE.InitVbo();
 				g_lines.push_back(NEW_LINE);
@@ -323,7 +323,7 @@ GLvoid ClickFunc(int button, int state, int x, int y)
 
 			case DRAW_POINT:
 				Point NEW_POINT;
-				NEW_POINT.move_coord = vec3(glPos.first, glPos.second, 0.0f);		// 마우스 좌표 입력
+				NEW_POINT.move_coord = vec3(glPos.first - move_Pos.x, glPos.second - move_Pos.y, 0.0f);		// 마우스 좌표 입력
 				NEW_POINT.color = vec3(urd(dre), urd(dre), urd(dre));				//rgb값 넣기
 				NEW_POINT.InitVbo();
 				g_points.push_back(NEW_POINT);
@@ -331,7 +331,7 @@ GLvoid ClickFunc(int button, int state, int x, int y)
 				break;
 			case DRAW_TRIANGLE:
 				Triangle NEW_TRIANGLE;
-				NEW_TRIANGLE.move_coord = vec3(glPos.first, glPos.second, 0.0f);		// 마우스 좌표 입력
+				NEW_TRIANGLE.move_coord = vec3(glPos.first - move_Pos.x, glPos.second - move_Pos.y, 0.0f);		// 마우스 좌표 입력
 				NEW_TRIANGLE.color = vec3(urd(dre), urd(dre), urd(dre));				//rgb값 넣기
 				NEW_TRIANGLE.InitVbo();
 				g_triangles.push_back(NEW_TRIANGLE);
@@ -339,7 +339,7 @@ GLvoid ClickFunc(int button, int state, int x, int y)
 				break;
 			case DRAW_RECT:
 				Rect NEW_RECT;
-				NEW_RECT.move_coord = vec3(glPos.first, glPos.second, 0.0f);		// 마우스 좌표 입력
+				NEW_RECT.move_coord = vec3(glPos.first - move_Pos.x, glPos.second - move_Pos.y, 0.0f);		// 마우스 좌표 입력
 				NEW_RECT.color = vec3(urd(dre), urd(dre), urd(dre));				//rgb값 넣기
 				NEW_RECT.InitVbo();
 				g_rects.push_back(NEW_RECT);

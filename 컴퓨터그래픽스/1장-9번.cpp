@@ -8,14 +8,12 @@
 #include <gl/glm/glm/glm.hpp>
 #include <stdlib.h>
 #include <stdio.h>
-
 #pragma comment(lib, "freeglut")
 #pragma comment(lib, "glew32")
 #pragma comment(lib, "glew32s")
 #define _CRT_SECURE_NO_WARNINGS //--- 프로그램 맨 앞에 선언할 것
 
 enum draw_mode {
-
 	DIALOG = 0,
 	ZIGZAG,
 	RECT_SPIRAL,
@@ -76,6 +74,7 @@ struct Triangle {
 	GLfloat angle = 0;
 	GLfloat radius = 0;
 	float theta = 0;
+
 	void InitVbo() {
 		glGenBuffers(1, &m_vbo); // VBO 생성
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
