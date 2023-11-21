@@ -40,7 +40,7 @@ struct Point {
 	float x;
 	float y;
 };
-struct Rect {
+struct Rectangle {
 	Point LD;		//좌하단 좌표
 	Point RT;		//우하단 좌표
 	Point LDGL;		//좌하단 GL변환 좌표
@@ -54,8 +54,8 @@ struct Rect {
 	}
 };
 GLfloat speed[9] = { 3.0f,3.0f,3.0f,3.0f,3.0f,3.0f,3.0f,3.0f ,3.0f };
-vector<Rect> rect;
-vector<Rect> seperate_rect;
+vector<Rectangle> rect;
+vector<Rectangle> seperate_rect;
 pair<float, float> ConvertWindowToGL_X(int windowX, int windowY)
 {
 	float glX = ((float)windowX - (float)windowXSize / 2.0f) / ((float)windowXSize / 2.0f);
@@ -65,7 +65,7 @@ pair<float, float> ConvertWindowToGL_X(int windowX, int windowY)
 	return make_pair(glX, glY);
 }
 
-GLvoid convertGL(Rect& rectangle) {
+GLvoid convertGL(Rectangle& rectangle) {
 	pair<float, float> glCoordsLD = ConvertWindowToGL_X(rectangle.LD.x, rectangle.LD.y);
 	pair<float, float> glCoordsRT = ConvertWindowToGL_X(rectangle.RT.x, rectangle.RT.y);
 	rectangle.LDGL.x = glCoordsLD.first; rectangle.LDGL.y = glCoordsLD.second;
@@ -75,7 +75,7 @@ GLvoid convertGL(Rect& rectangle) {
 GLvoid makeRect()
 {
 
-	Rect temp;
+	Rectangle temp;
 	temp.r = color(gen);
 	temp.g = color(gen);
 	temp.b = color(gen);
@@ -106,14 +106,14 @@ GLvoid Reshape(int w, int h) {//--- 콜백 함수: 다시 그리기 콜백 함수 {
 	windowYSize = h;
 }
 
-void  Make4SeperateRect(const Rect& rect);
+void  Make4SeperateRect(const Rectangle& rect);
 GLvoid drawScene();//--- 콜백 함수: 그리기 콜백 함수 {  // 바탕색을 ‘blue’ 로 지정
 GLvoid Keyboard(unsigned char key, int x, int y);
 GLvoid Mouse(int button, int state, int x, int y);
 GLvoid Timer(int val);
 GLvoid move_LRUD();
 GLvoid CheckCollision();
-void Make9SeperateRect(const Rect& rect);
+void Make9SeperateRect(const Rectangle& rect);
 
 
 bool Press_LRUD, Press_Dialog, Press_Mix;
@@ -248,16 +248,16 @@ GLvoid Timer(int val) {
 	else
 	{
 		seperate_rect.clear();
-		for (auto& a : speed)
+		for (auto& f_angle : speed)
 		{
-			a = 1.0f;
+			f_angle = 1.0f;
 		}
 	}
 	glutPostRedisplay();  // 화면을 다시 그리도록 요청
 }
 
-void Make4SeperateRect(const Rect& rect) {
-	Rect temp;
+void Make4SeperateRect(const Rectangle& rect) {
+	Rectangle temp;
 
 	for (int i = 0; i < 2; i++) {
 		for (int j = 0; j < 2; j++) {
@@ -274,8 +274,8 @@ void Make4SeperateRect(const Rect& rect) {
 	}
 }
 
-void Make9SeperateRect(const Rect& rect) {
-	Rect temp;
+void Make9SeperateRect(const Rectangle& rect) {
+	Rectangle temp;
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {

@@ -24,7 +24,7 @@ struct Point {
 	float x;
 	float y;
 };
-struct Rect {
+struct Rectangle {
 	Point LD;		//좌하단 좌표
 	Point RT;		//우하단 좌표
 	Point LDGL;		//좌하단 GL변환 좌표
@@ -38,7 +38,7 @@ struct Rect {
 	float dx, dy;
 	float angle;
 };
-GLvoid  COLOR_MOVE(vector<Rect>& rect);
+GLvoid  COLOR_MOVE(vector<Rectangle>& rect);
 pair<float, float> ConvertWindowToGL_X(int windowX, int windowY)
 {
 	float glX = ((float)windowX - (float)windowXSize / 2.0f) / ((float)windowXSize / 2.0f);
@@ -47,9 +47,9 @@ pair<float, float> ConvertWindowToGL_X(int windowX, int windowY)
 
 	return make_pair(glX, glY);
 }
-void makeRect(vector <Rect>* rect, int& value, int x, int y)
+void makeRect(vector <Rectangle>* rect, int& value, int x, int y)
 {
-	Rect temp;
+	Rectangle temp;
 	temp.r = (rand() % 256) / 256.0f;
 	temp.g = (rand() % 256) / 256.0f;
 	temp.b = (rand() % 256) / 256.0f;
@@ -72,9 +72,9 @@ bool Rectin(Point LD, Point RT, int x, int y)
 	}
 	else return true;
 }
-void CalculateDiagonalMove(vector <Rect>& rect);
-void CalculatZigzag(vector <Rect>& rect);
-GLvoid  Scale_Move(vector<Rect>& rect);
+void CalculateDiagonalMove(vector <Rectangle>& rect);
+void CalculatZigzag(vector <Rectangle>& rect);
+GLvoid  Scale_Move(vector<Rectangle>& rect);
 GLvoid drawScene();//--- 콜백 함수: 그리기 콜백 함수 {  // 바탕색을 ‘blue’ 로 지정
 GLvoid Reshape(int w, int h) {//--- 콜백 함수: 다시 그리기 콜백 함수 {
 	glViewport(0, 0, w, h);
@@ -85,7 +85,7 @@ GLvoid Keyboard(unsigned char key, int x, int y);
 GLvoid Mouse(int button, int state, int x, int y);
 GLvoid Timer(int val);
 int interval = 0;
-vector<Rect> rect;
+vector<Rectangle> rect;
 bool toggle_a, toggle_i, toggle_c, toggle_o;
 float red, green, blue;
 bool left_button;
@@ -182,12 +182,12 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 		toggle_o = false;
 		break;
 	case 'm':
-		for (Rect& a : rect)
+		for (Rectangle& f_angle : rect)
 		{
-			a.LD = a.first_LD;
-			a.RT = a.first_RT;
-			a.LDGL = a.first_LDGL;
-			a.RTGL = a.first_RTGL;
+			f_angle.LD = f_angle.first_LD;
+			f_angle.RT = f_angle.first_RT;
+			f_angle.LDGL = f_angle.first_LDGL;
+			f_angle.RTGL = f_angle.first_RTGL;
 		}
 		break;
 	case 'r':
@@ -238,98 +238,98 @@ GLvoid Timer(int val) {
 	glutPostRedisplay();  // 화면을 다시 그리도록 요청
 }
 
-GLvoid CalculateDiagonalMove(vector<Rect>& rect) {
+GLvoid CalculateDiagonalMove(vector<Rectangle>& rect) {
 
-	for (Rect& a : rect) {
+	for (Rectangle& f_angle : rect) {
 		// 좌표 업데이트
-		if (a.LD.x <= 0 || a.RT.x >= windowXSize)
+		if (f_angle.LD.x <= 0 || f_angle.RT.x >= windowXSize)
 		{
-			a.dx *= -1;
+			f_angle.dx *= -1;
 
 		}
-		if (a.LD.y >= windowYSize || a.RT.y <= 0)
+		if (f_angle.LD.y >= windowYSize || f_angle.RT.y <= 0)
 		{
-			a.dy *= -1;
+			f_angle.dy *= -1;
 		}
-		a.LD.x += a.dx * cos(a.angle);
-		a.LD.y += a.dy * sin(a.angle);
-		a.RT.x += a.dx * cos(a.angle);
-		a.RT.y += a.dy * sin(a.angle);
+		f_angle.LD.x += f_angle.dx * cos(f_angle.angle);
+		f_angle.LD.y += f_angle.dy * sin(f_angle.angle);
+		f_angle.RT.x += f_angle.dx * cos(f_angle.angle);
+		f_angle.RT.y += f_angle.dy * sin(f_angle.angle);
 
 		// GL 변환 좌표 업데이트
-		pair<float, float> glCoordsLD = ConvertWindowToGL_X(a.LD.x, a.LD.y);
-		pair<float, float> glCoordsRT = ConvertWindowToGL_X(a.RT.x, a.RT.y);
-		a.LDGL.x = glCoordsLD.first;
-		a.LDGL.y = glCoordsLD.second;
-		a.RTGL.x = glCoordsRT.first;
-		a.RTGL.y = glCoordsRT.second;
+		pair<float, float> glCoordsLD = ConvertWindowToGL_X(f_angle.LD.x, f_angle.LD.y);
+		pair<float, float> glCoordsRT = ConvertWindowToGL_X(f_angle.RT.x, f_angle.RT.y);
+		f_angle.LDGL.x = glCoordsLD.first;
+		f_angle.LDGL.y = glCoordsLD.second;
+		f_angle.RTGL.x = glCoordsRT.first;
+		f_angle.RTGL.y = glCoordsRT.second;
 
 	}
 }
-GLvoid  CalculatZigzag(vector<Rect>& rect)
+GLvoid  CalculatZigzag(vector<Rectangle>& rect)
 {
 	if (interval <= 100) {
-		for (Rect& a : rect) {
+		for (Rectangle& f_angle : rect) {
 			// 좌표 업데이트
 			if (toggle_a == false) {
-				if (a.LD.x <= 0 || a.RT.x >= windowXSize)
+				if (f_angle.LD.x <= 0 || f_angle.RT.x >= windowXSize)
 				{
-					a.dx *= -1;
+					f_angle.dx *= -1;
 
 				}
-				if (a.LD.y >= windowYSize || a.RT.y <= 0)
+				if (f_angle.LD.y >= windowYSize || f_angle.RT.y <= 0)
 				{
-					a.dy *= -1;
+					f_angle.dy *= -1;
 				}
 			}
-			a.LD.x += a.dx * cos(45);
-			a.LD.y += a.dy * sin(45);
-			a.RT.x += a.dx * cos(45);
-			a.RT.y += a.dy * sin(45);
+			f_angle.LD.x += f_angle.dx * cos(45);
+			f_angle.LD.y += f_angle.dy * sin(45);
+			f_angle.RT.x += f_angle.dx * cos(45);
+			f_angle.RT.y += f_angle.dy * sin(45);
 
 			// GL 변환 좌표 업데이트
-			pair<float, float> glCoordsLD = ConvertWindowToGL_X(a.LD.x, a.LD.y);
-			pair<float, float> glCoordsRT = ConvertWindowToGL_X(a.RT.x, a.RT.y);
-			a.LDGL.x = glCoordsLD.first;
-			a.LDGL.y = glCoordsLD.second;
-			a.RTGL.x = glCoordsRT.first;
-			a.RTGL.y = glCoordsRT.second;
+			pair<float, float> glCoordsLD = ConvertWindowToGL_X(f_angle.LD.x, f_angle.LD.y);
+			pair<float, float> glCoordsRT = ConvertWindowToGL_X(f_angle.RT.x, f_angle.RT.y);
+			f_angle.LDGL.x = glCoordsLD.first;
+			f_angle.LDGL.y = glCoordsLD.second;
+			f_angle.RTGL.x = glCoordsRT.first;
+			f_angle.RTGL.y = glCoordsRT.second;
 		}
 		interval++;
 	}
 	else
 	{
 		interval = 0;
-		for (Rect& a : rect) {
-			a.dx *= -1;
+		for (Rectangle& f_angle : rect) {
+			f_angle.dx *= -1;
 		}
 	}
 }
-GLvoid  Scale_Move(vector<Rect>& rect)
+GLvoid  Scale_Move(vector<Rectangle>& rect)
 {
-	for (Rect& a : rect) {
+	for (Rectangle& f_angle : rect) {
 		// 좌표 업데이트
-		if (a.LD.x <= 0 || a.RT.x >= windowXSize || a.RT.x <= 0 || a.LD.x >= windowXSize)
+		if (f_angle.LD.x <= 0 || f_angle.RT.x >= windowXSize || f_angle.RT.x <= 0 || f_angle.LD.x >= windowXSize)
 		{
-			a.dx *= -1;
+			f_angle.dx *= -1;
 
 		}
-		if (a.LD.y >= windowYSize || a.RT.y <= 0 || a.RT.y >= windowYSize || a.LD.y <= 0)
+		if (f_angle.LD.y >= windowYSize || f_angle.RT.y <= 0 || f_angle.RT.y >= windowYSize || f_angle.LD.y <= 0)
 		{
-			a.dy *= -1;
+			f_angle.dy *= -1;
 		}
-		a.LD.x -= a.dx;
-		a.LD.y += a.dy;
-		a.RT.x += a.dx;
-		a.RT.y -= a.dy;
+		f_angle.LD.x -= f_angle.dx;
+		f_angle.LD.y += f_angle.dy;
+		f_angle.RT.x += f_angle.dx;
+		f_angle.RT.y -= f_angle.dy;
 
 		// GL 변환 좌표 업데이트
-		pair<float, float> glCoordsLD = ConvertWindowToGL_X(a.LD.x, a.LD.y);
-		pair<float, float> glCoordsRT = ConvertWindowToGL_X(a.RT.x, a.RT.y);
-		a.LDGL.x = glCoordsLD.first;
-		a.LDGL.y = glCoordsLD.second;
-		a.RTGL.x = glCoordsRT.first;
-		a.RTGL.y = glCoordsRT.second;
+		pair<float, float> glCoordsLD = ConvertWindowToGL_X(f_angle.LD.x, f_angle.LD.y);
+		pair<float, float> glCoordsRT = ConvertWindowToGL_X(f_angle.RT.x, f_angle.RT.y);
+		f_angle.LDGL.x = glCoordsLD.first;
+		f_angle.LDGL.y = glCoordsLD.second;
+		f_angle.RTGL.x = glCoordsRT.first;
+		f_angle.RTGL.y = glCoordsRT.second;
 	}
 
 
@@ -337,12 +337,12 @@ GLvoid  Scale_Move(vector<Rect>& rect)
 }
 
 
-GLvoid  COLOR_MOVE(vector<Rect>& rect) {
+GLvoid  COLOR_MOVE(vector<Rectangle>& rect) {
 
-	for (Rect& a : rect)
+	for (Rectangle& f_angle : rect)
 	{
-		a.r = (rand() % 256) / 256.0f;
-		a.g = (rand() % 256) / 256.0f;
-		a.b = (rand() % 256) / 256.0f;
+		f_angle.r = (rand() % 256) / 256.0f;
+		f_angle.g = (rand() % 256) / 256.0f;
+		f_angle.b = (rand() % 256) / 256.0f;
 	}
 }

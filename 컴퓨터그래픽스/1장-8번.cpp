@@ -57,20 +57,20 @@ GLint result;
 GLchar errorLog[512];
 vec3 Line_vertex[2] = { {-0.2f,0.0f,0.0f },{0.2f,0.0f,0.0f} };
 vec3 Triangle_vertex[3] = { {0.0f,0.2f,0.0f },{-0.17f,-0.1f,0.0f},{0.17f,-0.1f,0.0f} };
-vec3 raw[2] = { { -1,0,0 }, { 1,0,0 } };
-vec3 col[2] = { { 0,-1,0 }, { 0,1,0 } };
+vec3 X_POS[2] = { { -1,0,0 }, { 1,0,0 } };
+vec3 Y_POS[2] = { { 0,-1,0 }, { 0,1,0 } };
 
 
 bool button_l = TRUE;
 struct Sector {
-	vec3 move_coord;
+	vec3 move_pos;
 	GLuint m_vbo;
 
-	void InitVbo(vec3* a) {
+	void InitVbo(vec3* f_angle) {
 		glGenBuffers(1, &m_vbo); // VBO 생성
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
 		// VBO에 데이터 복사
-		glBufferData(GL_ARRAY_BUFFER, 2 * sizeof(vec3), a, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, 2 * sizeof(vec3), f_angle, GL_STATIC_DRAW);
 	}
 	void Draw() {
 
@@ -92,7 +92,7 @@ struct Sector {
 
 };
 struct Triangle {
-	vec3 move_coord;
+	vec3 move_pos;
 	vec3 color;
 	GLuint m_vbo;
 	vec3 SCALE = { 1,1,1 };
@@ -110,7 +110,7 @@ struct Triangle {
 		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
 		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
 		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
-		glUniform3f(posUniformLoc,  move_coord.x, move_coord.y,0);
+		glUniform3f(posUniformLoc,  move_pos.x, move_pos.y,0);
 		int SCALEUniformLoc = glGetUniformLocation(shaderProgramID, "scale");
 		glUniform3f(SCALEUniformLoc, SCALE.x, SCALE.y, 0);		//wasd로 움직이는 거리+초기좌표
 		glLineWidth(5.0f);
@@ -135,12 +135,12 @@ struct Triangle {
 
 Sector RAW;
 Sector COL;
-Triangle g_TriangleShape;
+Triangle g_Triangle;
 Triangle g_triangles[4];
 
 void initialize_triangle(){	random_device rd;
 	default_random_engine dre(rd());
-	uniform_real_distribution<float> urd(0, 1);	for (int i = 0; i<2; i++)	{		for (int j = 0; j < 2; j++) {			g_triangles[2 * i + j].move_coord = vec3(-0.5 + 1 * j, -0.5 + 1 * i, 0);			g_triangles[2 * i + j].color = vec3(urd(dre), urd(dre), urd(dre));			g_triangles[2 * i + j].InitVbo();		}	}}
+	uniform_real_distribution<float> urd(0, 1);	for (int i = 0; i<2; i++)	{		for (int j = 0; j < 2; j++) {			g_triangles[2 * i + j].move_pos = vec3(-0.5 + 1 * j, -0.5 + 1 * i, 0);			g_triangles[2 * i + j].color = vec3(urd(dre), urd(dre), urd(dre));			g_triangles[2 * i + j].InitVbo();		}	}}
 
 pair<float, float> ConvertWinToGL(int x, int y) {
 	float mx = ((float)x - (WIDTH / 2)) / (WIDTH / 2); //gl좌표계로 변경
@@ -164,8 +164,8 @@ void main(int argc, char** argv) {//--- 윈도우 출력하고 콜백함수 설정
 	make_vertexShaders(); //--- 버텍스 세이더 만들기
 	make_fragmentShaders(); //--- 프래그먼트 세이더 만들기
 	shaderProgramID = make_shaderProgram();
-	RAW.InitVbo(raw);
-	COL.InitVbo(col);
+	RAW.InitVbo(X_POS);
+	COL.InitVbo(Y_POS);
 	initialize_triangle();
 	glutMouseFunc(ClickFunc);
 	glutDisplayFunc(drawScene); //--- 출력 콜백 함수
@@ -223,30 +223,30 @@ GLvoid ClickFunc(int button, int state, int x, int y)
 
 		if (-1.0f < glPos.first && glPos.first < 0 && -1.0f < glPos.second && glPos.second < 0)  //1사 분면
 		{
-			g_triangles[0].move_coord.x = glPos.first;
-			g_triangles[0].move_coord.y = glPos.second;
+			g_triangles[0].move_pos.x = glPos.first;
+			g_triangles[0].move_pos.y = glPos.second;
 			
 			g_triangles[0].Setscale();
 		}
 
 		else if (0 < glPos.first && glPos.first < 1.0f && -1.0f < glPos.second && glPos.second < 0)  //2사 분면
 		{
-			g_triangles[1].move_coord.x = glPos.first;
-			g_triangles[1].move_coord.y = glPos.second;
+			g_triangles[1].move_pos.x = glPos.first;
+			g_triangles[1].move_pos.y = glPos.second;
 			g_triangles[1].Setscale();
 		}
 
 		if (-1.0f < glPos.first && glPos.first < 0 && 0 < glPos.second && glPos.second < 1.0f)  //3사 분면
 		{
-			g_triangles[2].move_coord.x = glPos.first;
-			g_triangles[2].move_coord.y = glPos.second;
+			g_triangles[2].move_pos.x = glPos.first;
+			g_triangles[2].move_pos.y = glPos.second;
 			g_triangles[2].Setscale();
 		}
 
 		if (0 < glPos.first && glPos.first < 1.0f && 0 < glPos.second && glPos.second < 1.0f)  //4사 분면
 		{
-			g_triangles[3].move_coord.x = glPos.first;
-			g_triangles[3].move_coord.y = glPos.second;
+			g_triangles[3].move_pos.x = glPos.first;
+			g_triangles[3].move_pos.y = glPos.second;
 			g_triangles[3].Setscale();
 		}
 

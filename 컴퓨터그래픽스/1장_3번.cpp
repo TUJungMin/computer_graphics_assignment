@@ -12,7 +12,7 @@ struct Point {
 	float x;
 	float y;
 };
-struct Rect {
+struct Rectangle {
 	Point LD;		//좌하단 좌표
 	Point RT;		//우하단 좌표
 	Point LDGL;		//좌하단 GL변환 좌표
@@ -23,7 +23,7 @@ struct Rect {
 };
 int windowXSize = 1600;
 int windowYSize = 800;
-vector<Rect> rect;
+vector<Rectangle> rect;
 
 pair<float, float> ConvertWindowToGL_X(int windowX, int windowY)
 {
@@ -33,9 +33,9 @@ pair<float, float> ConvertWindowToGL_X(int windowX, int windowY)
 
 	return make_pair(glX, glY);
 }
-void makeRect(vector <Rect>* rect, int& value)
+void makeRect(vector <Rectangle>* rect, int& value)
 {
-	Rect temp;
+	Rectangle temp;
 	temp.r = (rand() % 256) / 256.0f;
 	temp.g = (rand() % 256) / 256.0f;
 	temp.b = (rand() % 256) / 256.0f;
@@ -95,7 +95,7 @@ void main(int argc, char** argv) {//--- 윈도우 출력하고 콜백함수 설정 { //--- 윈
 	green = (rand() % 256) / 256.0f;
 	blue = (rand() % 256) / 256.0f;
 	{
-		Rect temp;
+		Rectangle temp;
 		temp.r = (rand() % 256) / 256.0f;
 		temp.g = (rand() % 256) / 256.0f;
 		temp.b = (rand() % 256) / 256.0f;

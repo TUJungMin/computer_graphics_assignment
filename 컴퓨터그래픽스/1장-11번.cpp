@@ -75,20 +75,20 @@ vec3 point_vertex[5] = {
 	{0.2f,-0.2f,0.0f},
 	{0.3f,0.2f,0.0f}
 };
-vec3 raw[2] = { { -1,0,0 }, { 1,0,0 } };
-vec3 col[2] = { { 0,-1,0 }, { 0,1,0 } };
+vec3 X_POS[2] = { { -1,0,0 }, { 1,0,0 } };
+vec3 Y_POS[2] = { { 0,-1,0 }, { 0,1,0 } };
 GLvoid Timer(int value);
 bool first_press = FALSE;
-bool button_l = FALSE, button_a = FALSE, button_t = FALSE, button_p = FALSE, button_r = FALSE;
+bool button_l = FALSE, button_a = FALSE, button_f = FALSE, button_p = FALSE, button_r = FALSE;
 struct Sector {
-	vec3 move_coord;
+	vec3 move_pos;
 	GLuint m_vbo;
 
-	void InitVbo(vec3* a) {
+	void InitVbo(vec3* f_angle) {
 		glGenBuffers(1, &m_vbo); // VBO 생성
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
 		// VBO에 데이터 복사
-		glBufferData(GL_ARRAY_BUFFER, 2 * sizeof(vec3), a, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, 2 * sizeof(vec3), f_angle, GL_STATIC_DRAW);
 	}
 	void Draw() {
 
@@ -111,7 +111,7 @@ struct Sector {
 };
 struct Line {
 
-	vec3 move_coord;
+	vec3 move_pos;
 	vec3 color;
 	GLuint m_vbo;
 	vec3 move_Pos;
@@ -129,14 +129,14 @@ struct Line {
 		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
 		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
 		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
-		glUniform3f(posUniformLoc, move_Pos.x + move_coord.x, move_Pos.y + move_coord.y, 0);		//wasd로 움직이는 거리+초기좌표
+		glUniform3f(posUniformLoc, move_Pos.x + move_pos.x, move_Pos.y + move_pos.y, 0);		//wasd로 움직이는 거리+초기좌표
 		glLineWidth(10.0f);
 		glDrawArrays(GL_LINES, 0, 2);
 
 	}
 };
-struct Rect {
-	vec3 move_coord;
+struct Rectangle {
+	vec3 move_pos;
 	vec3 color;
 	GLuint m_vbo;
 	vec3 move_Pos;
@@ -154,7 +154,7 @@ struct Rect {
 		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
 		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
 		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
-		glUniform3f(posUniformLoc, move_Pos.x + move_coord.x, move_Pos.y + move_coord.y, 0);		//wasd로 움직이는 거리+초기좌표
+		glUniform3f(posUniformLoc, move_Pos.x + move_pos.x, move_Pos.y + move_pos.y, 0);		//wasd로 움직이는 거리+초기좌표
 		glLineWidth(10.0f);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glDrawArrays(GL_TRIANGLES, 1, 3);
@@ -169,11 +169,11 @@ struct Rect {
 		}
 		else
 		{
-			move_coord.x = 0.5;
-			move_coord.y = 0.5;
+			move_pos.x = 0.5;
+			move_pos.y = 0.5;
 			Rect_vertex[2].x = 0;
 			Rect_vertex[3].x = 0;
-			button_t = FALSE;
+			button_f = FALSE;
 			button_a = FALSE;
 			first_press = FALSE;
 		}
@@ -184,7 +184,7 @@ struct Rect {
 	}
 };
 struct Triangle {
-	vec3 move_coord;
+	vec3 move_pos;
 	vec3 color;
 	GLuint m_vbo;
 	vec3 move_Pos;
@@ -203,7 +203,7 @@ struct Triangle {
 		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
 		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
 		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
-		glUniform3f(posUniformLoc, move_Pos.x + move_coord.x, move_Pos.y + move_coord.y, 0);
+		glUniform3f(posUniformLoc, move_Pos.x + move_pos.x, move_Pos.y + move_pos.y, 0);
 
 		glLineWidth(5.0f);
 		if(!button_l)
@@ -224,8 +224,8 @@ struct Triangle {
 			button_l = FALSE;
 			button_a = FALSE;
 			first_press = FALSE;
-			move_coord.x = -0.5f;
-			move_coord.y =  0.5f;
+			move_pos.x = -0.5f;
+			move_pos.y =  0.5f;
 		}
 		glGenBuffers(1, &m_vbo); // VBO 생성
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
@@ -237,7 +237,7 @@ struct Triangle {
 
 };
 struct Pentagon {
-	vec3 move_coord;
+	vec3 move_pos;
 	vec3 color;
 	GLuint m_vbo;
 	vec3 move_Pos;
@@ -255,7 +255,7 @@ struct Pentagon {
 		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
 		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
 		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
-		glUniform3f(posUniformLoc, move_Pos.x + move_coord.x, move_Pos.y + move_coord.y, 0);
+		glUniform3f(posUniformLoc, move_Pos.x + move_pos.x, move_Pos.y + move_pos.y, 0);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glDrawArrays(GL_TRIANGLES, 1, 3);
 		glDrawArrays(GL_TRIANGLES, 2, 3);
@@ -276,8 +276,8 @@ struct Pentagon {
 			 first_press = FALSE;
 			button_r = FALSE;
 			button_a = FALSE;
-			move_coord.x = -0.5f;
-			move_coord.y = -0.5f;
+			move_pos.x = -0.5f;
+			move_pos.y = -0.5f;
 		}
 		glGenBuffers(1, &m_vbo); // VBO 생성
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
@@ -286,7 +286,7 @@ struct Pentagon {
 	}
 };
 struct Point {
-	vec3 move_coord;
+	vec3 move_pos;
 	vec3 color;
 	GLuint m_vbo;
 	vec3 move_Pos;
@@ -305,24 +305,24 @@ struct Point {
 		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
 		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
 		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
-		glUniform3f(posUniformLoc, move_Pos.x + move_coord.x, move_Pos.y + move_coord.y, 0);
+		glUniform3f(posUniformLoc, move_Pos.x + move_pos.x, move_Pos.y + move_pos.y, 0);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glDrawArrays(GL_TRIANGLES, 1, 3);
 		glDrawArrays(GL_TRIANGLES, 2, 3);
 	}
 	void pentagon_to_point()
 	{
-		for (auto& a : point_vertex)
+		for (auto& f_angle : point_vertex)
 		{
-			if (a.x != 0 && a.x>0)
-				a.x -= 0.01f;
-			if (a.x != 0 && a.x < 0)
-				a.x += 0.01f;
+			if (f_angle.x != 0 && f_angle.x>0)
+				f_angle.x -= 0.01f;
+			if (f_angle.x != 0 && f_angle.x < 0)
+				f_angle.x += 0.01f;
 
-			if (a.y != 0 && a.y > 0)
-				a.y -= 0.01f;
-			if (a.y != 0 && a.y < 0)
-				a.y += 0.01f;
+			if (f_angle.y != 0 && f_angle.y > 0)
+				f_angle.y -= 0.01f;
+			if (f_angle.y != 0 && f_angle.y < 0)
+				f_angle.y += 0.01f;
 		}
 		glGenBuffers(1, &m_vbo); // VBO 생성
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
@@ -334,25 +334,25 @@ struct Point {
 
 Sector RAW;
 Sector COL;
-Triangle g_TriangleShape;
-Rect g_rect;
+Triangle g_Triangle;
+Rectangle g_rect;
 Pentagon g_pentagon;
 Point g_point;
 void initialize_triangle(){	random_device rd;
 	default_random_engine dre(rd());
-	uniform_real_distribution<float> urd(0, 1);	g_TriangleShape.color.r = urd(dre);	g_TriangleShape.color.g = urd(dre);	g_TriangleShape.color.b = urd(dre);	g_TriangleShape.move_coord.x = -0.5f;	g_TriangleShape.move_coord.y = 0.5f;	g_TriangleShape.InitVbo();}void initialize_rect(){	random_device rd;
+	uniform_real_distribution<float> urd(0, 1);	g_Triangle.color.r = urd(dre);	g_Triangle.color.g = urd(dre);	g_Triangle.color.b = urd(dre);	g_Triangle.move_pos.x = -0.5f;	g_Triangle.move_pos.y = 0.5f;	g_Triangle.InitVbo();}void initialize_rect(){	random_device rd;
 	default_random_engine dre(rd());
-	uniform_real_distribution<float> urd(0, 1);	g_rect.color.r = urd(dre);	g_rect.color.g = urd(dre);	g_rect.color.b = urd(dre);	g_rect.move_coord.x = 0.5f;	g_rect.move_coord.y = 0.5f;	g_rect.InitVbo();}void initialize_pentagon()
+	uniform_real_distribution<float> urd(0, 1);	g_rect.color.r = urd(dre);	g_rect.color.g = urd(dre);	g_rect.color.b = urd(dre);	g_rect.move_pos.x = 0.5f;	g_rect.move_pos.y = 0.5f;	g_rect.InitVbo();}void initialize_pentagon()
 {
 	random_device rd;
 	default_random_engine dre(rd());
-	uniform_real_distribution<float> urd(0, 1);	g_pentagon.color.r = urd(dre);	g_pentagon.color.g = urd(dre);	g_pentagon.color.b = urd(dre);	g_pentagon.move_coord.x = -0.5f;	g_pentagon.move_coord.y = -0.5f;	g_pentagon.InitVbo();
+	uniform_real_distribution<float> urd(0, 1);	g_pentagon.color.r = urd(dre);	g_pentagon.color.g = urd(dre);	g_pentagon.color.b = urd(dre);	g_pentagon.move_pos.x = -0.5f;	g_pentagon.move_pos.y = -0.5f;	g_pentagon.InitVbo();
 }
 void initialize_point()
 {
 	random_device rd;
 	default_random_engine dre(rd());
-	uniform_real_distribution<float> urd(0, 1);	g_point.color.r = urd(dre);	g_point.color.g = urd(dre);	g_point.color.b = urd(dre);	g_point.move_coord.x = 0.5f;	g_point.move_coord.y = -0.5f;	for (int i = 0; i < 5; i++) {		g_point.first_coord[i] = point_vertex[i];
+	uniform_real_distribution<float> urd(0, 1);	g_point.color.r = urd(dre);	g_point.color.g = urd(dre);	g_point.color.b = urd(dre);	g_point.move_pos.x = 0.5f;	g_point.move_pos.y = -0.5f;	for (int i = 0; i < 5; i++) {		g_point.first_coord[i] = point_vertex[i];
 	}
 	g_point.InitVbo();
 }
@@ -379,8 +379,8 @@ void main(int argc, char** argv) {//--- 윈도우 출력하고 콜백함수 설정
 	make_vertexShaders(); //--- 버텍스 세이더 만들기
 	make_fragmentShaders(); //--- 프래그먼트 세이더 만들기
 	shaderProgramID = make_shaderProgram();
-	RAW.InitVbo(raw);
-	COL.InitVbo(col);
+	RAW.InitVbo(X_POS);
+	COL.InitVbo(Y_POS);
 	initialize_triangle();
 	initialize_rect();
 	initialize_pentagon();
@@ -404,9 +404,9 @@ GLvoid drawScene()
 	RAW.Draw();	COL.Draw();
 	}
 	if (button_l || !first_press) {
-		g_TriangleShape.Draw();
+		g_Triangle.Draw();
 	}
-	if (button_t || !first_press) {
+	if (button_f || !first_press) {
 		g_rect.Draw();
 	}
 	if (button_r || !first_press) {
@@ -426,10 +426,10 @@ GLvoid Reshape(int w, int h) {//--- 콜백 함수: 다시 그리기 콜백 함수
 GLvoid Timer(int value)
 {
 	if (button_l&&first_press) {
-		g_TriangleShape.line_to_triangle();
+		g_Triangle.line_to_triangle();
 	}
 
-	if (button_t && first_press) {
+	if (button_f && first_press) {
 		g_rect.triangle_to_rect();
 	}
 	if (button_r && first_press) {
@@ -451,24 +451,24 @@ GLvoid KeyBoardFunc(unsigned char key, int x, int y)
 	case 'l':
 		Triangle_vertex[2].y = -0.2f;
 		button_l = TRUE;
-		button_t = FALSE;
+		button_f = FALSE;
 		button_r = FALSE;
 		button_p = FALSE;
 		button_a = FALSE;
-		g_TriangleShape.move_coord.x = 0;
-		g_TriangleShape.move_coord.y = 0;
+		g_Triangle.move_pos.x = 0;
+		g_Triangle.move_pos.y = 0;
 		
 		break;
 	case 't':
 		Rect_vertex[2].x = 0;
 		Rect_vertex[3].x = 0;
 		button_l = FALSE;
-		button_t = TRUE;
+		button_f = TRUE;
 		button_r = FALSE;
 		button_p = FALSE;
 		button_a = FALSE;
-		g_rect.move_coord.x = 0;
-		g_rect.move_coord.y = 0;
+		g_rect.move_pos.x = 0;
+		g_rect.move_pos.y = 0;
 		break;
 	case 'r':
 		Pentagon_vertex[0].x = -0.2f;
@@ -476,11 +476,11 @@ GLvoid KeyBoardFunc(unsigned char key, int x, int y)
 		Pentagon_vertex[2].y = 0.2f;
 		button_r = TRUE;
 		button_l = FALSE;
-		button_t = FALSE;
+		button_f = FALSE;
 		button_p = FALSE;
 		button_a = FALSE;
-		g_pentagon.move_coord.x = 0;
-		g_pentagon.move_coord.y = 0;
+		g_pentagon.move_pos.x = 0;
+		g_pentagon.move_pos.y = 0;
 		break;
 	case 'p':
 		for (int i = 0; i < 5; i++) {
@@ -488,11 +488,11 @@ GLvoid KeyBoardFunc(unsigned char key, int x, int y)
 		}
 		button_p = TRUE;
 		button_l = FALSE;
-		button_t = FALSE;
+		button_f = FALSE;
 		button_r = FALSE;
 		button_a = FALSE;
-		g_point.move_coord.x = 0;
-		g_point.move_coord.y = 0;
+		g_point.move_pos.x = 0;
+		g_point.move_pos.y = 0;
 		break;
 
 	case 'a':
@@ -506,7 +506,7 @@ GLvoid KeyBoardFunc(unsigned char key, int x, int y)
 			point_vertex[i] = g_point.first_coord[i];
 		}
 		button_l = TRUE;
-		button_t = TRUE;
+		button_f = TRUE;
 		button_r = TRUE;
 		button_p = TRUE;
 		button_a = TRUE;;

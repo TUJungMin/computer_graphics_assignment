@@ -30,14 +30,18 @@ char* filetobuf(const char* file) {
 	buf[length] = 0; // Null terminator 
 	return buf; // Return the buffer 
 }
-
+enum type_shape {
+	pentagon = 0,
+	point,
+	line,
+	triangle,
+	rect,
+};
 float WIDTH = 800;
 float HEIGHT = 600;
 using namespace std;
 GLvoid drawScene(GLvoid);
 GLvoid Reshape(int w, int h);
-GLvoid KeyBoardFunc(unsigned char key, int x, int y);
-int draw_num = 0;
 void make_vertexShaders();
 void make_fragmentShaders();
 GLuint make_shaderProgram();
@@ -47,46 +51,93 @@ GLvoid TimerFunc(int value);
 GLuint shaderProgramID; //--- 세이더 프로그램 이름
 GLuint vertexShader; //--- 버텍스 세이더 객체
 GLuint fragmentShader;
+GLvoid Reshape(int w, int h) {//--- 콜백 함수: 다시 그리기 콜백 함수
+	WIDTH = w;
+	HEIGHT = h;
+	glViewport(0, 0, w, h);
+}
 GLint result;
 GLchar errorLog[512];
-vec3 Line_vertex[2] = { {-0.2f,0.0f,0.0f },{0.2f,0.0f,0.0f} };
+vec3 Line_vertex[2] = { {-0.1f,0.0f,0.0f },{0.1f,0.0f,0.0f} };
 vec3 Triangle_vertex[3] = {
-	{-0.2f, -0.2f, 0.0f},  // 왼쪽 아래 꼭짓점
-	{0.2f, -0.2f, 0.0f },   // 오른쪽 아래 꼭짓점
-	{0.0f, -0.2f, 0.0f}     // 위 꼭짓점
+	{-0.1f, -0.1f, 0.0f},  // 왼쪽 아래 꼭짓점
+	{0.1f, -0.1f, 0.0f },   // 오른쪽 아래 꼭짓점
+	{0.0f, 0.1f, 0.0f}     // 위 꼭짓점
 };
 vec3 Rect_vertex[4] = {
-	{-0.2f,-0.2f,0.0f},
-	{0.2f,-0.2f,0.0f},
-	{0.0f,0.2f,0.0f},				//Rect_vertex[2],[3].x움직여야함
-	{0.0f,0.2f,0.0f}
+	{-0.1f,-0.1f,0.0f},
+	{0.1f,-0.1f,0.0f},
+	{-0.1f,0.1f,0.0f},				//Rect_vertex[2],[3].x움직여야함
+	{0.1f,0.1f,0.0f}
 };
 vec3 Pentagon_vertex[5] = {
-	{-0.2f,0.2f,0.0f},
-	{-0.2f,-0.2f,0.0f},
-	{0.0f,0.2f,0.0f},				//Rect_vertex[2],[3].x움직여야함
-	{0.2f,-0.2f,0.0f},
-	{0.2f,0.2f,0.0f}
+	{-0.1f,0.05f,0.0f},
+	{-0.05f,-0.05f,0.0f},
+	{0.0f,0.15f,0.0f},				//Rect_vertex[2],[3].x움직여야함
+	{0.05f,-0.05f,0.0f},
+	{0.1f,0.05f,0.0f}
 };
-vec3 point_vertex[5] = {
-	{-0.3f,0.2f,0.0f},
-	{-0.2f,-0.2f,0.0f},
-	{0.0f,0.4f,0.0f},				//Rect_vertex[2],[3].x움직여야함
-	{0.2f,-0.2f,0.0f},
-	{0.3f,0.2f,0.0f}
-};
-vec3 raw[2] = { { -1,0,0 }, { 1,0,0 } };
-vec3 col[2] = { { 0,-1,0 }, { 0,1,0 } };
+vec3 point_vertex = { 0.0f,0.0f,0.0f };
 GLvoid Timer(int value);
-
-bool button_l, button_a, button_t, button_p, button_r;
-
-struct Line {
-
-	vec3 move_coord;
+GLvoid Motion(int x, int y);
+GLvoid ClickFunc(int button, int state, int x, int y);
+struct Point {
+	vec3 move_pos;
 	vec3 color;
 	GLuint m_vbo;
-	vec3 move_Pos;
+	bool catch_object = false;
+	bool draw_switch = TRUE;
+	bool move = FALSE;
+	GLfloat DX_DY[2] = { 1.0f,1.0f };
+	void InitVbo() {
+		glGenBuffers(1, &m_vbo); // VBO 생성
+		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
+		// VBO에 데이터 복사
+		glBufferData(GL_ARRAY_BUFFER, sizeof(point_vertex), &point_vertex, GL_STATIC_DRAW);
+	}
+	void Draw() {
+		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(point_vertex), &point_vertex, GL_STATIC_DRAW);
+		int vertexAttribLoc = glGetAttribLocation(shaderProgramID, "vPos");
+		glEnableVertexAttribArray(vertexAttribLoc);
+		glVertexAttribPointer(vertexAttribLoc, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);
+		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
+		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
+		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
+		glUniform3f(posUniformLoc, move_pos.x, move_pos.y, 0);
+		glPointSize(10.0f);
+		glDrawArrays(GL_POINTS, 0, 1);
+
+	}
+	void Move_Dialog()
+	{
+		if (move_pos.x > 1.0f) {
+			DX_DY[0] *= -1;
+		}
+		else if (move_pos.x < -1.0f) {
+			DX_DY[0] *= -1;
+		}
+		if (move_pos.y > 1.0f) {
+			DX_DY[1] *= -1;
+		}
+		else if (move_pos.y < -1.0f) {
+			DX_DY[1] *= -1;
+		}
+
+		move_pos.x = move_pos.x + DX_DY[0] * 0.01f;
+		move_pos.y = move_pos.y + DX_DY[1] * 0.01f;
+
+	}
+};
+struct Line {
+
+	vec3 move_pos;
+	vec3 color;
+	GLuint m_vbo;
+	GLfloat DX_DY[2] = { 1.0f,1.0f };
+	bool catch_object = false;
+	bool draw_switch = TRUE;
+	bool move = FALSE;
 	void InitVbo() {
 		glGenBuffers(1, &m_vbo); // VBO 생성
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
@@ -95,23 +146,98 @@ struct Line {
 	}
 	void Draw() {
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Line_vertex), Line_vertex, GL_STATIC_DRAW);
 		int vertexAttribLoc = glGetAttribLocation(shaderProgramID, "vPos");
 		glEnableVertexAttribArray(vertexAttribLoc);
 		glVertexAttribPointer(vertexAttribLoc, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);
 		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
 		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
 		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
-		glUniform3f(posUniformLoc, move_Pos.x + move_coord.x, move_Pos.y + move_coord.y, 0);		//wasd로 움직이는 거리+초기좌표
+		glUniform3f(posUniformLoc, move_pos.x, move_pos.y, 0);		//wasd로 움직이는 거리+초기좌표
 		glLineWidth(10.0f);
 		glDrawArrays(GL_LINES, 0, 2);
 
 	}
+	void Move_Dialog()
+	{
+		if (move_pos.x > 1.0f) {
+			DX_DY[0] *= -1;
+		}
+		else if (move_pos.x < -1.0f) {
+			DX_DY[0] *= -1;
+		}
+		if (move_pos.y > 1.0f) {
+			DX_DY[1] *= -1;
+		}
+		else if (move_pos.y < -1.0f) {
+			DX_DY[1] *= -1;
+		}
+
+		move_pos.x = move_pos.x + DX_DY[0] * 0.01f;
+		move_pos.y = move_pos.y + DX_DY[1] * 0.01f;
+
+	}
 };
-struct Rect {
-	vec3 move_coord;
+struct Triangle {
+	vec3 move_pos;
 	vec3 color;
 	GLuint m_vbo;
-	vec3 move_Pos;
+	bool catch_object = false;
+	bool draw_switch = TRUE;
+	bool move = FALSE;
+	GLfloat DX_DY[2] = { 1.0f,1.0f };
+	void InitVbo() {
+		glGenBuffers(1, &m_vbo); // VBO 생성
+		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
+		// VBO에 데이터 복사
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Triangle_vertex), Triangle_vertex, GL_STATIC_DRAW);
+	}
+
+	void Draw() {
+		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(Triangle_vertex), Triangle_vertex, GL_STATIC_DRAW);
+		int vertexAttribLoc = glGetAttribLocation(shaderProgramID, "vPos");
+		glEnableVertexAttribArray(vertexAttribLoc);
+		glVertexAttribPointer(vertexAttribLoc, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);
+		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
+		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
+		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
+		glUniform3f(posUniformLoc, move_pos.x, move_pos.y, 0);
+
+		glLineWidth(5.0f);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+
+	}
+	void Move_Dialog()
+	{
+		if (move_pos.x > 1.0f) {
+			DX_DY[0] *= -1;
+		}
+		else if (move_pos.x < -1.0f) {
+			DX_DY[0] *= -1;
+		}
+		if (move_pos.y > 1.0f) {
+			DX_DY[1] *= -1;
+		}
+		else if (move_pos.y < -1.0f) {
+			DX_DY[1] *= -1;
+		}
+
+		move_pos.x = move_pos.x + DX_DY[0] * 0.01f;
+		move_pos.y = move_pos.y + DX_DY[1] * 0.01f;
+
+	}
+
+
+};
+struct Rectangle {
+	vec3 move_pos;
+	vec3 color;
+	GLuint m_vbo;
+	bool catch_object = false;
+	bool draw_switch = TRUE;
+	bool move = FALSE;
+	GLfloat DX_DY[2] = { 1.0f,1.0f };
 	void InitVbo() {
 		glGenBuffers(1, &m_vbo); // VBO 생성
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
@@ -120,88 +246,46 @@ struct Rect {
 	}
 	void Draw() {
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(Rect_vertex), Rect_vertex, GL_STATIC_DRAW);
 		int vertexAttribLoc = glGetAttribLocation(shaderProgramID, "vPos");
 		glEnableVertexAttribArray(vertexAttribLoc);
 		glVertexAttribPointer(vertexAttribLoc, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);
 		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
 		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
 		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
-		glUniform3f(posUniformLoc, move_Pos.x + move_coord.x, move_Pos.y + move_coord.y, 0);		//wasd로 움직이는 거리+초기좌표
+		glUniform3f(posUniformLoc, move_pos.x, move_pos.y, 0);		//wasd로 움직이는 거리+초기좌표
 		glLineWidth(10.0f);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glDrawArrays(GL_TRIANGLES, 1, 3);
 	}
-	void triangle_to_rect()
+	void Move_Dialog()
 	{
-		if (Rect_vertex[2].x > -0.2) {
-			Rect_vertex[2].x -= 0.004f;
+		if (move_pos.x > 1.0f) {
+			DX_DY[0] *= -1;
 		}
-		if (Rect_vertex[3].x < 0.2) {
-			Rect_vertex[3].x += 0.004f;
+		else if (move_pos.x < -1.0f) {
+			DX_DY[0] *= -1;
 		}
-		else
-		{
-			button_t = FALSE;
-			button_a = FALSE;
+		if (move_pos.y > 1.0f) {
+			DX_DY[1] *= -1;
 		}
-		glGenBuffers(1, &m_vbo); // VBO 생성
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
-		// VBO에 데이터 복사
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Rect_vertex), Rect_vertex, GL_STATIC_DRAW);
-	}
-};
-struct Triangle {
-	vec3 move_coord;
-	vec3 color;
-	GLuint m_vbo;
-	vec3 move_Pos;
-	void InitVbo() {
-		glGenBuffers(1, &m_vbo); // VBO 생성
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
-		// VBO에 데이터 복사
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Triangle_vertex), Triangle_vertex, GL_STATIC_DRAW);
-	}
+		else if (move_pos.y < -1.0f) {
+			DX_DY[1] *= -1;
+		}
 
-	void Draw() {
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-		int vertexAttribLoc = glGetAttribLocation(shaderProgramID, "vPos");
-		glEnableVertexAttribArray(vertexAttribLoc);
-		glVertexAttribPointer(vertexAttribLoc, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);
-		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
-		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
-		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
-		glUniform3f(posUniformLoc, move_Pos.x + move_coord.x, move_Pos.y + move_coord.y, 0);
-
-		glLineWidth(5.0f);
-		glDrawArrays(GL_LINE_LOOP, 0, 3);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		move_pos.x = move_pos.x + DX_DY[0] * 0.01f;
+		move_pos.y = move_pos.y + DX_DY[1] * 0.01f;
 
 	}
-
-	void line_to_triangle()
-	{
-		if (Triangle_vertex[2].y < 0.2) {
-			Triangle_vertex[2].y += 0.004f;
-		}
-		else
-		{
-			button_l = FALSE;
-			button_a = FALSE;
-		}
-		glGenBuffers(1, &m_vbo); // VBO 생성
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
-		// VBO에 데이터 복사
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Triangle_vertex), Triangle_vertex, GL_STATIC_DRAW);
-
-	}
-
-
 };
 struct Pentagon {
-	vec3 move_coord;
+	vec3 move_pos;
 	vec3 color;
 	GLuint m_vbo;
-	vec3 move_Pos;
+	GLfloat DX_DY[2] = { 1.0f,1.0f };
+	bool catch_object = false;
+	bool draw_switch = TRUE;
+	bool move = FALSE;
 	void InitVbo() {
 		glGenBuffers(1, &m_vbo); // VBO 생성
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
@@ -210,104 +294,220 @@ struct Pentagon {
 	}
 	void Draw() {
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-		int vertexAttribLoc = glGetAttribLocation(shaderProgramID, "vPos");
-		glEnableVertexAttribArray(vertexAttribLoc);
-		glVertexAttribPointer(vertexAttribLoc, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);
-		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
-		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
-		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
-		glUniform3f(posUniformLoc, move_Pos.x + move_coord.x, move_Pos.y + move_coord.y, 0);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawArrays(GL_TRIANGLES, 1, 3);
-		glDrawArrays(GL_TRIANGLES, 2, 3);
-	}
-	void rect_to_pentagon()
-	{
-		if (Pentagon_vertex[2].y < 0.4)
-		{
-			Pentagon_vertex[2].y += 0.004f;
-			Pentagon_vertex[0].x -= 0.002f;
-			Pentagon_vertex[4].x += 0.002f;
-		}
-		else
-		{
-			button_r = FALSE;
-			button_a = FALSE;
-		}
-		glGenBuffers(1, &m_vbo); // VBO 생성
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
-		// VBO에 데이터 복사
 		glBufferData(GL_ARRAY_BUFFER, sizeof(Pentagon_vertex), Pentagon_vertex, GL_STATIC_DRAW);
-	}
-};
-struct Point {
-	vec3 move_coord;
-	vec3 color;
-	GLuint m_vbo;
-	vec3 move_Pos;
-	vec3 first_coord[5];
-	void InitVbo() {
-		glGenBuffers(1, &m_vbo); // VBO 생성
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
-		// VBO에 데이터 복사
-		glBufferData(GL_ARRAY_BUFFER, sizeof(point_vertex), point_vertex, GL_STATIC_DRAW);
-	}
-	void Draw() {
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 		int vertexAttribLoc = glGetAttribLocation(shaderProgramID, "vPos");
 		glEnableVertexAttribArray(vertexAttribLoc);
 		glVertexAttribPointer(vertexAttribLoc, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), 0);
 		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
 		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
 		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
-		glUniform3f(posUniformLoc, move_Pos.x + move_coord.x, move_Pos.y + move_coord.y, 0);
+		glUniform3f(posUniformLoc, move_pos.x, move_pos.y, 0);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glDrawArrays(GL_TRIANGLES, 1, 3);
 		glDrawArrays(GL_TRIANGLES, 2, 3);
 	}
-	void pentagon_to_point()
+	void Move_Dialog()
 	{
-		for (auto& a : point_vertex)
-		{
-			if (a.x != 0 && a.x > 0)
-				a.x -= 0.01f;
-			if (a.x != 0 && a.x < 0)
-				a.x += 0.01f;
-
-			if (a.y != 0 && a.y > 0)
-				a.y -= 0.01f;
-			if (a.y != 0 && a.y < 0)
-				a.y += 0.01f;
+		if (move_pos.x > 1.0f) {
+			DX_DY[0] *= -1;
 		}
-		glGenBuffers(1, &m_vbo); // VBO 생성
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo); // VBO를 바인딩
-		// VBO에 데이터 복사
-		glBufferData(GL_ARRAY_BUFFER, sizeof(point_vertex), point_vertex, GL_STATIC_DRAW);
+		else if (move_pos.x < -1.0f) {
+			DX_DY[0] *= -1;
+		}
+		if (move_pos.y > 1.0f) {
+			DX_DY[1] *= -1;
+		}
+		else if (move_pos.y < -1.0f) {
+			DX_DY[1] *= -1;
+		}
+
+		move_pos.x = move_pos.x + DX_DY[0] * 0.01f;
+		move_pos.y = move_pos.y + DX_DY[1] * 0.01f;
 
 	}
+
 };
 
-Triangle g_TriangleShape;
-Rect g_rect;
-Pentagon g_pentagon;
-Point g_point;
-void initialize_triangle(){	random_device rd;
-	default_random_engine dre(rd());
-	uniform_real_distribution<float> urd(0, 1);	g_TriangleShape.color.r = urd(dre);	g_TriangleShape.color.g = urd(dre);	g_TriangleShape.color.b = urd(dre);	g_TriangleShape.move_coord.x = -0.5f;	g_TriangleShape.move_coord.y = 0.5f;	g_TriangleShape.InitVbo();}void initialize_rect(){	random_device rd;
-	default_random_engine dre(rd());
-	uniform_real_distribution<float> urd(0, 1);	g_rect.color.r = urd(dre);	g_rect.color.g = urd(dre);	g_rect.color.b = urd(dre);	g_rect.move_coord.x = 0.5f;	g_rect.move_coord.y = 0.5f;	g_rect.InitVbo();}void initialize_pentagon()
-{
+
+vector <Line> g_line;
+vector <Triangle> g_Triangle;
+vector<Rectangle> g_rect;
+vector<Pentagon> g_pentagon;
+vector<Point> g_point;
+void initialize_point() {
 	random_device rd;
 	default_random_engine dre(rd());
-	uniform_real_distribution<float> urd(0, 1);	g_pentagon.color.r = urd(dre);	g_pentagon.color.g = urd(dre);	g_pentagon.color.b = urd(dre);	g_pentagon.move_coord.x = -0.5f;	g_pentagon.move_coord.y = -0.5f;	g_pentagon.InitVbo();
+	uniform_real_distribution<float> urd(0, 1);
+	uniform_real_distribution<float> coord(-0.9f, 0.9f);
+	for (int i = 0; i < 3; i++) {
+		Point temp;
+		temp.color.r = urd(dre);
+		temp.color.g = urd(dre);
+		temp.color.b = urd(dre);
+		temp.move_pos.x = coord(dre);
+		temp.move_pos.y = coord(dre);
+		temp.move_pos.z = 0;
+		temp.InitVbo();
+		g_point.push_back(temp); // Add the Triangle object to the vector
+	}
 }
-void initialize_point()
+void initialize_line() {
+	random_device rd;
+	default_random_engine dre(rd());
+	uniform_real_distribution<float> urd(0, 1);
+	uniform_real_distribution<float> coord(-0.9f, 0.9f);
+	for (int i = 0; i < 3; i++) {
+		Line temp;
+		temp.color.r = urd(dre);
+		temp.color.g = urd(dre);
+		temp.color.b = urd(dre);
+		temp.move_pos.x = coord(dre);
+		temp.move_pos.y = coord(dre);
+		temp.move_pos.z = 0;
+		temp.InitVbo();
+		g_line.push_back(temp); // Add the Triangle object to the vector
+	}
+}
+void initialize_triangle() {
+	random_device rd;
+	default_random_engine dre(rd());
+	uniform_real_distribution<float> urd(0, 1);
+	uniform_real_distribution<float> coord(-0.9f, 0.9f);
+	for (int i = 0; i < 3; i++) {
+		Triangle temp;
+		temp.color.r = urd(dre);
+		temp.color.g = urd(dre);
+		temp.color.b = urd(dre);
+		temp.move_pos.x = coord(dre);
+		temp.move_pos.y = coord(dre);
+		temp.move_pos.z = 0;
+		temp.InitVbo();
+		g_Triangle.push_back(temp); // Add the Triangle object to the vector
+	}
+}
+void initialize_rect() {
+	random_device rd;
+	default_random_engine dre(rd());
+	uniform_real_distribution<float> urd(0, 1);
+	uniform_real_distribution<float> coord(-0.9f, 0.9f);
+	for (int i = 0; i < 3; i++) {
+		Rectangle temp;
+		temp.color.r = urd(dre);
+		temp.color.g = urd(dre);
+		temp.color.b = urd(dre);
+		temp.move_pos.x = coord(dre);
+		temp.move_pos.y = coord(dre);
+		temp.move_pos.z = 0;
+		temp.InitVbo();
+		g_rect.push_back(temp); // Add the Triangle object to the vector
+	}
+}
+void initialize_pentagon() {
+	random_device rd;
+	default_random_engine dre(rd());
+	uniform_real_distribution<float> urd(0, 1);
+	uniform_real_distribution<float> coord(-0.9f, 0.9f);
+	for (int i = 0; i < 3; i++) {
+		Pentagon temp;
+		temp.color.r = urd(dre);
+		temp.color.g = urd(dre);
+		temp.color.b = urd(dre);
+		temp.move_pos.x = coord(dre);
+		temp.move_pos.y = coord(dre);
+		temp.move_pos.z = 0;
+		temp.InitVbo();
+		g_pentagon.push_back(temp); // Add the Triangle object to the vector
+	}
+}
+void make_Polygon(int D_vertex,GLfloat x_pos, GLfloat y_pos)
 {
 	random_device rd;
 	default_random_engine dre(rd());
-	uniform_real_distribution<float> urd(0, 1);	g_point.color.r = urd(dre);	g_point.color.g = urd(dre);	g_point.color.b = urd(dre);	g_point.move_coord.x = 0.5f;	g_point.move_coord.y = -0.5f;	for (int i = 0; i < 5; i++) {		g_point.first_coord[i] = point_vertex[i];
+	uniform_real_distribution<float> urd(0, 1);
+	switch (D_vertex)
+	{
+	case point:
+	{
+		Point temp;
+		temp.color.r = urd(dre);
+		temp.color.g = urd(dre);
+		temp.color.b = urd(dre);
+		temp.move_pos.x = x_pos;
+		temp.move_pos.y = y_pos;
+		temp.move_pos.z = 0;
+		temp.catch_object = FALSE;
+		temp.InitVbo();
+		temp.move = TRUE;
+		g_point.push_back(temp); // Add the Triangle object to the vector
 	}
-	g_point.InitVbo();
+		break;
+	case line:
+	{
+		Line temp;
+
+		temp.color.r = urd(dre);
+		temp.color.g = urd(dre);
+		temp.color.b = urd(dre);
+		temp.move_pos.x = x_pos;
+		temp.move_pos.y = y_pos;
+		temp.move_pos.z = 0;
+		temp.catch_object = FALSE;
+		temp.InitVbo();
+		temp.move = TRUE;
+		g_line.push_back(temp);
+	}
+		break;
+	case triangle:
+	{
+		Triangle temp;
+
+		temp.color.r = urd(dre);
+		temp.color.g = urd(dre);
+		temp.color.b = urd(dre);
+		temp.move_pos.x = x_pos;
+		temp.move_pos.y = y_pos;
+		temp.move_pos.z = 0;
+		temp.catch_object = FALSE;
+		temp.InitVbo();
+		temp.move = TRUE;
+		g_Triangle.push_back(temp);
+	}
+		break;
+	case rect:
+	{
+		Rectangle temp;
+
+		temp.color.r = urd(dre);
+		temp.color.g = urd(dre);
+		temp.color.b = urd(dre);
+		temp.move_pos.x = x_pos;
+		temp.move_pos.y = y_pos;
+		temp.move_pos.z = 0;
+		temp.catch_object = FALSE;
+		temp.InitVbo();
+		temp.move = TRUE;
+		g_rect.push_back(temp);
+	}
+		break;
+	case pentagon:
+	{
+		Pentagon temp;
+
+		temp.color.r = urd(dre);
+		temp.color.g = urd(dre);
+		temp.color.b = urd(dre);
+		temp.move_pos.x = x_pos;
+		temp.move_pos.y = y_pos;
+		temp.move_pos.z = 0;
+		temp.catch_object = FALSE;
+		temp.InitVbo();
+		temp.move = TRUE;
+		g_pentagon.push_back(temp);
+	}
+		break;
+	default:
+		break;
+	}
 }
 
 pair<float, float> ConvertWinToGL(int x, int y) {
@@ -335,11 +535,14 @@ void main(int argc, char** argv) {//--- 윈도우 출력하고 콜백함수 설정
 	initialize_triangle();
 	initialize_rect();
 	initialize_pentagon();
+	initialize_line();
 	initialize_point();
+	glutMouseFunc(ClickFunc);
+	glutMotionFunc(Motion);
+	glutTimerFunc(20, Timer, 1);
 	glutDisplayFunc(drawScene); //--- 출력 콜백 함수
 	glutReshapeFunc(Reshape);
-	glutTimerFunc(20, Timer, 1);
-	glutKeyboardFunc(KeyBoardFunc);
+	//glutTimerFunc(20, Timer, 1);
 	glutMainLoop(); // 이벤트 처리 시작
 }
 
@@ -351,29 +554,327 @@ GLvoid drawScene()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//--- 렌더링 파이프라인에 세이더 불러오기
 	glUseProgram(shaderProgramID);
-	g_TriangleShape.Draw();
-	g_rect.Draw();
-	g_pentagon.Draw();
-	g_point.Draw();
+
+	for (int i = 0; i < g_point.size(); ++i) {
+		if (g_point[i].draw_switch) {
+			g_point[i].Draw();
+		}
+	}
+	for (int i = 0; i < g_line.size(); ++i) {
+		if (g_line[i].draw_switch) {
+			g_line[i].Draw();
+		}
+	}
+	for (int i = 0; i < g_Triangle.size(); ++i) {
+		if (g_Triangle[i].draw_switch) {
+			g_Triangle[i].Draw();
+		}
+	}
+	for (int i = 0; i < g_rect.size(); ++i) {
+		if (g_rect[i].draw_switch) {
+			g_rect[i].Draw();
+		}
+	}
+	for (int i = 0; i < g_pentagon.size(); ++i) {
+		if (g_pentagon[i].draw_switch) {
+			g_pentagon[i].Draw();
+		}
+	}
 
 	glutSwapBuffers(); //--- 화면에 출력하기
 }
+pair<float, float> pos;
+GLvoid ClickFunc(int button, int state, int x, int y)
+{
+	pos = ConvertWinToGL(x, y);
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		for (int i = 0; i < g_point.size(); ++i) {
+			if (abs(pos.first - (g_point[i].move_pos.x)) <= 0.05 && abs(pos.second - (g_point[i].move_pos.y)) <= 0.05) {
+				g_point[i].catch_object = TRUE;
+			}
+		}
+		for (int i = 0; i < g_line.size(); ++i) {
+			if (abs(pos.first - (g_line[i].move_pos.x)) <= 0.1 && abs(pos.second - (g_line[i].move_pos.y)) <= 0.01) {
+				g_line[i].catch_object = TRUE;
+			}
+		}
+		for (int i = 0; i < g_Triangle.size(); ++i) {
+			if (abs(pos.first - (g_Triangle[i].move_pos.x)) <= 0.05 && abs(pos.second - (g_Triangle[i].move_pos.y)) <= 0.05) {
+				g_Triangle[i].catch_object = TRUE;
+			}
+		}
+		for (int i = 0; i < g_rect.size(); ++i) {
+			if (abs(pos.first - (g_rect[i].move_pos.x)) <= 0.05 && abs(pos.second - (g_rect[i].move_pos.y)) <= 0.05) {
+				g_rect[i].catch_object = TRUE;
+			}
+		}
+		for (int j = 0; j < g_pentagon.size(); ++j) {
+			if (abs(pos.first - (g_pentagon[j].move_pos.x)) <= 0.05 && abs(pos.second - (g_pentagon[j].move_pos.y)) <= 0.05) {
+				g_pentagon[j].catch_object = TRUE;
+			}
+		}
 
+
+
+	}
+	if (state == GLUT_UP)
+	{
+		auto m_pos = ConvertWinToGL(x, y);
+		int num = 0;
+		bool check_point = FALSE; int index_point = 0;
+		bool check_line = FALSE; int index_line = 0;
+		bool check_triangle = FALSE; int index_triangle = 0;
+		bool check_rect = FALSE; int index_rect = 0;
+		bool check_pentagon = FALSE; int index_pentagon = 0;
+
+		for (int i = 0; i < g_point.size(); ++i) {
+			if (abs(m_pos.first - (g_point[i].move_pos.x)) <= 0.05 && abs(m_pos.second - (g_point[i].move_pos.y)) <= 0.05)
+			{
+				num += 1;
+				if (!check_point) {
+					index_point = i;
+					check_point = TRUE;
+				}
+				else
+				{
+					g_point.erase(g_point.begin() + index_point);
+					g_point.erase(g_point.begin() + i - 1);
+					make_Polygon(line, m_pos.first, m_pos.second);
+					break;
+				}
+
+			}
+		}
+		for (int i = 0; i < g_line.size(); ++i) {
+			if (abs(m_pos.first - (g_line[i].move_pos.x)) <= 0.05 && abs(m_pos.second - (g_line[i].move_pos.y)) <= 0.05) {
+				num += 2;
+				if (!check_line) {
+					index_line = i;
+					check_line = TRUE;
+				}
+				else {
+					g_line.erase(g_line.begin() + index_line);
+					g_line.erase(g_line.begin() + i - 1);
+					make_Polygon(rect, m_pos.first, m_pos.second);
+					return;
+					
+				}
+			}
+		}
+		for (int i = 0; i < g_Triangle.size(); ++i) {
+			if (abs(m_pos.first - (g_Triangle[i].move_pos.x)) <= 0.05 && abs(m_pos.second - (g_Triangle[i].move_pos.y)) <= 0.05) 
+			{
+				num += 3;
+				if (!check_triangle) {
+					index_triangle = i;
+					check_triangle = TRUE;
+				}
+				else {
+					g_Triangle.erase(g_Triangle.begin() + index_triangle);
+					g_Triangle.erase(g_Triangle.begin() + i - 1);
+					make_Polygon(point, m_pos.first, m_pos.second);
+					return;
+				}
+			}
+		}
+		for (int i = 0; i < g_rect.size(); ++i) {
+			if (abs(m_pos.first - (g_rect[i].move_pos.x)) <= 0.05 && abs(m_pos.second - (g_rect[i].move_pos.y)) <= 0.05) 
+			{
+				num += 4;
+				if (!check_rect) {
+					index_rect = i;
+					check_rect = TRUE;
+				}
+				else 
+				{
+					g_rect.erase(g_rect.begin() + index_rect);
+					g_rect.erase(g_rect.begin() + i - 1);
+					make_Polygon(triangle, m_pos.first, m_pos.second);
+					return;
+				}
+			}
+		}
+		for (int i = 0; i < g_pentagon.size(); ++i) {
+			if (abs(m_pos.first - (g_pentagon[i].move_pos.x)) <= 0.05 && abs(m_pos.second - (g_pentagon[i].move_pos.y)) <= 0.05) 
+			{
+				num += 5;
+				if (!check_pentagon) {
+					index_pentagon = i;
+					check_pentagon = TRUE;
+				}
+				else {
+					g_pentagon.erase(g_pentagon.begin() + index_pentagon);
+					g_pentagon.erase(g_pentagon.begin() + i - 1);
+					make_Polygon(pentagon, m_pos.first, m_pos.second);
+					return;
+				}
+			}
+		}
+		{
+			if (check_point && check_line)
+			{
+				g_point.erase(g_point.begin() + index_point);
+				g_line.erase(g_line.begin() + index_line);
+				make_Polygon(triangle, m_pos.first, m_pos.second);
+			}
+			else if (check_point && check_triangle)
+			{
+				g_point.erase(g_point.begin() + index_point);
+				g_Triangle.erase(g_Triangle.begin() + index_triangle);
+				make_Polygon(rect, m_pos.first, m_pos.second);
+			}
+			else if (check_point && check_rect)
+			{
+				g_point.erase(g_point.begin() + index_point);
+				g_rect.erase(g_rect.begin() + index_rect);
+				make_Polygon(pentagon, m_pos.first, m_pos.second);
+			}
+			else if (check_point && check_pentagon)
+			{
+				g_point.erase(g_point.begin() + index_point);
+				g_pentagon.erase(g_pentagon.begin() + index_pentagon);
+				make_Polygon(point, m_pos.first, m_pos.second);
+			}
+			else if (check_line && check_triangle)
+			{
+				g_line.erase(g_line.begin() + index_line);
+				g_Triangle.erase(g_Triangle.begin() + index_triangle);
+				make_Polygon(pentagon, m_pos.first, m_pos.second);
+			}
+			else if (check_line && check_rect)
+			{
+				g_line.erase(g_line.begin() + index_line);
+				g_rect.erase(g_rect.begin() + index_rect);
+				make_Polygon(point, m_pos.first, m_pos.second);
+			}
+			else if (check_line && check_pentagon)
+			{
+				g_line.erase(g_line.begin() + index_line);
+				g_pentagon.erase(g_pentagon.begin() + index_pentagon);
+				make_Polygon(line, m_pos.first, m_pos.second);
+			}
+			else if (check_triangle && check_rect)
+			{
+				g_Triangle.erase(g_Triangle.begin() + index_triangle);
+				g_rect.erase(g_rect.begin() + index_rect);
+				make_Polygon(line, m_pos.first, m_pos.second);
+			}
+			else if (check_triangle && check_pentagon)
+			{
+				g_Triangle.erase(g_Triangle.begin() + index_triangle);
+				g_pentagon.erase(g_pentagon.begin() + index_pentagon);
+				make_Polygon(triangle, m_pos.first, m_pos.second);
+			}
+			else if (check_rect && check_pentagon)
+			{
+				g_rect.erase(g_rect.begin() + index_rect);
+				g_pentagon.erase(g_pentagon.begin() + index_pentagon);
+				make_Polygon(rect, m_pos.first, m_pos.second);
+			}
+		}
+
+
+		for (int i = 0; i < g_point.size(); ++i) {
+			g_point[i].catch_object = FALSE;
+		}
+		for (int i = 0; i < g_line.size(); ++i) {
+			g_line[i].catch_object = FALSE;
+		}
+		for (int i = 0; i < g_Triangle.size(); ++i) {
+			g_Triangle[i].catch_object = FALSE;
+		}
+		for (int i = 0; i < g_rect.size(); ++i) {
+			g_rect[i].catch_object = FALSE;
+		}
+		for (int i = 0; i < g_pentagon.size(); ++i) {
+			g_pentagon[i].catch_object = FALSE;
+		}
+	}
+}
+GLvoid Motion(int x, int y)
+{
+	auto move_pos = ConvertWinToGL(x, y);
+	for (int i = 0; i < g_point.size(); ++i) {
+		if (g_point[i].catch_object)
+		{
+			float dx = move_pos.first - pos.first;
+			float dy = move_pos.second - pos.second;
+			g_point[i].move_pos.x += dx;
+			g_point[i].move_pos.y += dy;
+			pos = move_pos;
+		}
+	}
+	for (int i = 0; i < g_line.size(); ++i) {
+		if (g_line[i].catch_object)
+		{
+			float dx = move_pos.first - pos.first;
+			float dy = move_pos.second - pos.second;
+			g_line[i].move_pos.x += dx;
+			g_line[i].move_pos.y += dy;
+			pos = move_pos;
+		}
+	}
+	for (int i = 0; i < g_Triangle.size(); ++i) {
+		if (g_Triangle[i].catch_object)
+		{
+			float dx = move_pos.first - pos.first;
+			float dy = move_pos.second - pos.second;
+			g_Triangle[i].move_pos.x += dx;
+			g_Triangle[i].move_pos.y += dy;
+			pos = move_pos;
+		}
+	}
+	for (int i = 0; i < g_rect.size(); ++i) {
+		if (g_rect[i].catch_object)
+		{
+			float dx = move_pos.first - pos.first;
+			float dy = move_pos.second - pos.second;
+			g_rect[i].move_pos.x += dx;
+			g_rect[i].move_pos.y += dy;
+			pos = move_pos;
+		}
+	}
+	for (int i = 0; i < g_pentagon.size(); ++i) {
+		if (g_pentagon[i].catch_object)
+		{
+			float dx = move_pos.first - pos.first;
+			float dy = move_pos.second - pos.second;
+			g_pentagon[i].move_pos.x += dx;
+			g_pentagon[i].move_pos.y += dy;
+			pos = move_pos;
+		}
+	}
+
+
+	glutPostRedisplay();
+}
 
 GLvoid Timer(int value)
 {
-	if (button_l) {
-		g_TriangleShape.line_to_triangle();
+	for (auto& f_angle : g_point)
+	{
+		if (f_angle.move)
+			f_angle.Move_Dialog();
 	}
-
-	if (button_t) {
-		g_rect.triangle_to_rect();
+	for (auto& f_angle : g_line)
+	{
+		if (f_angle.move)
+			f_angle.Move_Dialog();
 	}
-	if (button_r) {
-		g_pentagon.rect_to_pentagon();
+	for (auto& f_angle : g_Triangle)
+	{
+		if (f_angle.move)
+			f_angle.Move_Dialog();
 	}
-	if (button_p) {
-		g_point.pentagon_to_point();
+	for (auto& f_angle : g_rect)
+	{
+		if (f_angle.move)
+			f_angle.Move_Dialog();
+	}
+	for (auto& f_angle : g_pentagon)
+	{
+		if (f_angle.move)
+			f_angle.Move_Dialog();
 	}
 	glutPostRedisplay();
 	glutTimerFunc(20, Timer, 1);
@@ -440,8 +941,4 @@ GLuint make_shaderProgram() {
 	glUseProgram(shaderID);
 	return shaderID;
 }
-GLvoid Reshape(int w, int h) {//--- 콜백 함수: 다시 그리기 콜백 함수
-	WIDTH = w;
-	HEIGHT = h;
-	glViewport(0, 0, w, h);
-}
+

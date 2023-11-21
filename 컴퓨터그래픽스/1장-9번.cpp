@@ -63,7 +63,7 @@ vec3 Triangle_vertex[3] = { {0.0f,0.15f,0.0f },
 
 int make_triangle_num = 0;
 struct Triangle {
-	vec3 move_coord;
+	vec3 move_pos;
 	vec3 color;
 	GLuint m_vbo;
 	GLfloat DX_DY[2] = { 1.0f,1.0f };
@@ -89,7 +89,7 @@ struct Triangle {
 		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
 		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
 		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
-		glUniform3f(posUniformLoc, move_coord.x, move_coord.y, 0);
+		glUniform3f(posUniformLoc, move_pos.x, move_pos.y, 0);
 		int move_posUniformLoc = glGetUniformLocation(shaderProgramID, "theta");
 		glUniform1f(move_posUniformLoc, theta);
 		glLineWidth(5.0f);
@@ -98,59 +98,59 @@ struct Triangle {
 	}
 	void Move_Dialog()
 	{
-		if (move_coord.x > 1.0f) {
+		if (move_pos.x > 1.0f) {
 			DX_DY[0] *= -1;
 			theta = 90.0f;
 		}
-		else if (move_coord.x < -1.0f) {
+		else if (move_pos.x < -1.0f) {
 			DX_DY[0] *= -1;
 			theta = -90.0f;
 		}
-		if (move_coord.y > 1.0f) {
+		if (move_pos.y > 1.0f) {
 			DX_DY[1] *= -1;
 			theta = 180.0f;
 		}
-		else if (move_coord.y < -1.0f) {
+		else if (move_pos.y < -1.0f) {
 			DX_DY[1] *= -1;
 			theta = 0.0f;
 		}
 
-		move_coord.x = move_coord.x + DX_DY[0] * 0.01f;
-		move_coord.y = move_coord.y + DX_DY[1] * 0.01f;
+		move_pos.x = move_pos.x + DX_DY[0] * 0.01f;
+		move_pos.y = move_pos.y + DX_DY[1] * 0.01f;
 
 	}
 
 	void Move_Zigzag()
 	{
 		
-		if (move_coord.x > 1.0f) {
+		if (move_pos.x > 1.0f) {
 			DX_DY[0] *= -1;
-			move_coord.y = move_coord.y + DX_DY[1] * 0.1f;
+			move_pos.y = move_pos.y + DX_DY[1] * 0.1f;
 			theta = 90.0f;
 		}
-		else if (move_coord.x < -1.0f) {
+		else if (move_pos.x < -1.0f) {
 			DX_DY[0] *= -1;
-			move_coord.y = move_coord.y + DX_DY[1] * 0.1f;
+			move_pos.y = move_pos.y + DX_DY[1] * 0.1f;
 			theta = -90.0f;
 		}
-		if (move_coord.y > 1.0f) {
+		if (move_pos.y > 1.0f) {
 			DX_DY[1] *= -1;
-			move_coord.y = move_coord.y + DX_DY[1] * 0.1f;
+			move_pos.y = move_pos.y + DX_DY[1] * 0.1f;
 			theta = 180.0f;
 		}
-		else if (move_coord.y < -1.0f) {
+		else if (move_pos.y < -1.0f) {
 			DX_DY[1] *= -1;
-			move_coord.y = move_coord.y + DX_DY[1] * 0.1f;
+			move_pos.y = move_pos.y + DX_DY[1] * 0.1f;
 			theta = 0.0f;
 		}
-		move_coord.x = move_coord.x + DX_DY[0] * 0.01f;
+		move_pos.x = move_pos.x + DX_DY[0] * 0.01f;
 	}
 
 	void Move_RectSpiral()
 	{
-		move_coord.x = move_coord.x + DX_DY[0] * 0.01f;
+		move_pos.x = move_pos.x + DX_DY[0] * 0.01f;
 		move_x += DX_DY[0] * 0.01f;
-		move_coord.y = move_coord.y + DX_DY[1] * 0.01f;
+		move_pos.y = move_pos.y + DX_DY[1] * 0.01f;
 		move_y += DX_DY[1] * 0.01f;
 
 		if (abs(move_x) > interval[0])
@@ -183,16 +183,16 @@ struct Triangle {
 			DX_DY[1] = 0.0f;
 			move_x = 0;
 			move_y = 0;
-			move_coord.x += 0.5;
-			move_coord.y += 0.6;
+			move_pos.x += 0.5;
+			move_pos.y += 0.6;
 			
 		}
 	}
 
 	void Move_circle()
 	{
-		move_coord.x += radius * sin(angle + 3.14f + (3.14f * 1 / 4));
-		move_coord.y += radius * cos(angle + 3.14f + (3.14f * 1 / 4));
+		move_pos.x += radius * sin(angle + 3.14f + (3.14f * 1 / 4));
+		move_pos.y += radius * cos(angle + 3.14f + (3.14f * 1 / 4));
 		angle += 3.14f / 10.0f;
 		theta = theta-angle*radius;
 		radius +=0.0002f;
@@ -201,15 +201,15 @@ struct Triangle {
 			theta = 0;
 			radius = 0;
 			angle = 0;
-			move_coord.x = move_coord_first.x;
-			move_coord.y = move_coord_first.y;
+			move_pos.x = move_coord_first.x;
+			move_pos.y = move_coord_first.y;
 		}
 	}
 
 };
 vector <Triangle> g_triangles;
 
-void initialize_triangle(){	for (auto& a : g_triangles) {		a.angle = 0;		a.radius = 0;		a.theta = 0;		a.move_x = 0;		a.move_y = 0;	}}
+void initialize_triangle(){	for (auto& f_angle : g_triangles) {		f_angle.angle = 0;		f_angle.radius = 0;		f_angle.theta = 0;		f_angle.move_x = 0;		f_angle.move_y = 0;	}}
 pair<float, float> ConvertWinToGL(int x, int y) {
 	float mx = ((float)x - (WIDTH / 2)) / (WIDTH / 2); //gl좌표계로 변경
 	float my = -((float)y - (HEIGHT / 2)) / (HEIGHT / 2); //gl좌표계로 변경
@@ -273,12 +273,12 @@ GLvoid KeyBoardFunc(unsigned char key, int x, int y)
 
 	case '1':
 		initialize_triangle();
-		for (auto& a : g_triangles) {
+		for (auto& f_angle : g_triangles) {
 			for (int i = 0; i < 2; i++)
 			{
-				a.DX_DY[i] = urd(dre);
-				while (a.DX_DY[i] == 0)
-					a.DX_DY[i] = urd(dre);
+				f_angle.DX_DY[i] = urd(dre);
+				while (f_angle.DX_DY[i] == 0)
+					f_angle.DX_DY[i] = urd(dre);
 			}
 		}
 		draw_now = DIALOG;
@@ -288,12 +288,12 @@ GLvoid KeyBoardFunc(unsigned char key, int x, int y)
 
 	case '2':
 		initialize_triangle();
-		for (auto& a : g_triangles) {
+		for (auto& f_angle : g_triangles) {
 			for (int i = 0; i < 2; i++)
 			{
-				a.DX_DY[i] = urd(dre);
-				while (a.DX_DY[i] == 0)
-					a.DX_DY[i] = urd(dre);
+				f_angle.DX_DY[i] = urd(dre);
+				while (f_angle.DX_DY[i] == 0)
+					f_angle.DX_DY[i] = urd(dre);
 			}
 		}
 		draw_now = ZIGZAG;
@@ -305,10 +305,10 @@ GLvoid KeyBoardFunc(unsigned char key, int x, int y)
 			g_triangles[i].DX_DY[0] = -1.0f;
 			g_triangles[i].DX_DY[1] = 0.0f;
 		}
-		g_triangles[0].move_coord = { 0,1,0 };
-		g_triangles[1].move_coord = { 1,1,0 };
-		g_triangles[2].move_coord = { 0,0,0 };
-		g_triangles[3].move_coord = { 1,0,0 };
+		g_triangles[0].move_pos = { 0,1,0 };
+		g_triangles[1].move_pos = { 1,1,0 };
+		g_triangles[2].move_pos = { 0,0,0 };
+		g_triangles[3].move_pos = { 1,0,0 };
 		draw_now = RECT_SPIRAL;
 		break;
 	case '4':
@@ -327,20 +327,20 @@ GLvoid Timer(int value)
 	switch (draw_now)
 	{
 	case DIALOG:
-		for (auto& a : g_triangles)
-			a.Move_Dialog();
+		for (auto& f_angle : g_triangles)
+			f_angle.Move_Dialog();
 		break;
 	case ZIGZAG:
-		for (auto& a : g_triangles)
-			a.Move_Zigzag();
+		for (auto& f_angle : g_triangles)
+			f_angle.Move_Zigzag();
 		break;
 	case RECT_SPIRAL:
-		for (auto& a : g_triangles)
-			a.Move_RectSpiral();
+		for (auto& f_angle : g_triangles)
+			f_angle.Move_RectSpiral();
 		break;
 	case CIR_SPIRAL:
-		for (auto& a : g_triangles)
-			a.Move_circle();
+		for (auto& f_angle : g_triangles)
+			f_angle.Move_circle();
 		break;
 	case NOTHING:
 		break;
@@ -360,10 +360,10 @@ GLvoid ClickFunc(int button, int state, int x, int y)
 		auto glPos = ConvertWinToGL(x, y);
 		if (make_triangle_num < 4) {
 			Triangle temp;
-			temp.move_coord.x = glPos.first;
-			temp.move_coord.y = glPos.second;
+			temp.move_pos.x = glPos.first;
+			temp.move_pos.y = glPos.second;
 			temp.color = vec3(urd(dre), urd(dre), urd(dre));
-			temp.move_coord_first = temp.move_coord;
+			temp.move_coord_first = temp.move_pos;
 			temp.InitVbo();
 			g_triangles.push_back(temp);
 			make_triangle_num++;

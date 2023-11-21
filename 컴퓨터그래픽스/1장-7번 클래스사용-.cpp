@@ -184,12 +184,12 @@ public:
 		glDrawArrays(GL_POINTS, 0, 1);
 	}
 };
-class Rect {
+class Rectangle {
 	vec3 m_vertex[4];
 	GLuint m_vbo;
 
 public:
-	Rect() {
+	Rectangle() {
 		m_vertex[0].z = m_vertex[1].z = m_vertex[2].z = m_vertex[3].z = 0;
 
 		// 정점 좌표 설정
@@ -258,13 +258,13 @@ struct ShapeData {
 	}
 };
 
-Triangle g_TriangleShape;
+Triangle g_Triangle;
 
 Line g_lineShape;
 
 Point g_pointShape;
 
-Rect g_rectShape;
+Rectangle g_rectShape;
 
 vector<ShapeData> g_triangles;
 vector<ShapeData> g_points;
@@ -293,7 +293,7 @@ void main(int argc, char** argv) {//--- 윈도우 출력하고 콜백함수 설정
 	make_vertexShaders(); //--- 버텍스 세이더 만들기
 	make_fragmentShaders(); //--- 프래그먼트 세이더 만들기
 	shaderProgramID = make_shaderProgram();
-	g_TriangleShape.InitVbo();
+	g_Triangle.InitVbo();
 	g_lineShape.InitVbo();
 	g_pointShape.InitVbo();
 	g_rectShape.InitVbo();
@@ -310,7 +310,7 @@ GLvoid drawScene() { //--- 콜백 함수: 그리기 콜백 함수
 	glClear(GL_COLOR_BUFFER_BIT); // 설정된 색으로 전체를 칠하기
 	glUseProgram(shaderProgramID);
 	for (auto& t : g_triangles)
-		g_TriangleShape.Draw(t.m_pos, t.m_color);
+		g_Triangle.Draw(t.m_pos, t.m_color);
 	for (auto& t : g_lines)
 		g_lineShape.Draw(t.m_pos, t.m_color);
 	for (auto& t : g_points)

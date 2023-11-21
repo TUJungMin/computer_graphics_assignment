@@ -21,7 +21,7 @@ struct Point {
 	float x;
 	float y;
 };
-struct Rect {
+struct Rectangle {
 	Point LD;		//좌하단 좌표
 	Point RT;		//우하단 좌표
 	Point LDGL;		//좌하단 GL변환 좌표
@@ -38,10 +38,10 @@ pair<float, float> ConvertWindowToGL_X(int windowX, int windowY)
 
 	return make_pair(glX, glY);
 }
-void makeRect(vector <Rect>& rect)
+void makeRect(vector <Rectangle>& rect)
 {
 	//srand(unsigned(time(NULL)));
-	Rect temp;
+	Rectangle temp;
 	temp.r = (rand() % 256) / 256.0f;
 	temp.g = (rand() % 256) / 256.0f;
 	temp.b = (rand() % 256) / 256.0f;
@@ -62,7 +62,7 @@ bool Rectin(Point LD, Point RT, int x, int y)
 	else return true;
 }
 
-void initialRect(vector <Rect>& rect) {
+void initialRect(vector <Rectangle>& rect) {
 	srand(unsigned(time(NULL)));
 	int num = rand() % 21 + 20;
 	for (int i = 0; i < num; ++i) {
@@ -80,13 +80,13 @@ GLvoid Mouse(int button, int state, int x, int y);
 GLvoid Timer(int val);
 GLvoid Motion(int x, int y);
 int interval = 0;
-vector<Rect> rect;
+vector<Rectangle> rect;
 bool make_rect, alive_Eraser;
 float red, green, blue;
 bool left_button;
 int value;
 int SelectNum;
-Rect eraser;
+Rectangle eraser;
 void main(int argc, char** argv) {//--- 윈도우 출력하고 콜백함수 설정 { //--- 윈도우 생성하기
 	glutInit(&argc, argv); // glut 초기화
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA); // 디스플레이 모드 설정

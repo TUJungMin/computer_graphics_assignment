@@ -42,7 +42,7 @@ void make_vertexShaders();
 void make_fragmentShaders();
 GLvoid Motion(int x, int y);
 GLuint make_shaderProgram();
-
+GLfloat calculate_area(vec3 f_angle, vec3 b, vec3 c);
 GLvoid TimerFunc(int value);
 //--- 필요한 변수 선언
 GLuint shaderProgramID; //--- 세이더 프로그램 이름
@@ -59,14 +59,16 @@ vec3 Rect_vertex[4] = {
 
 
 bool PointCatch = FALSE;
+bool RectCatch = FALSE;
 GLvoid Timer(int value);
 
+bool PointiInRect(GLfloat x_pos, GLfloat y_pos);
 
 
 
-struct Rect {
+struct Rectangle {
 	int catch_num;
-	vec3 move_coord;
+	vec3 move_pos;
 	vec3 color;
 	GLuint m_vbo;
 	vec3 move_Pos;
@@ -85,13 +87,13 @@ struct Rect {
 		int colorUniformLoc = glGetUniformLocation(shaderProgramID, "uColor");
 		glUniform3f(colorUniformLoc, color.x, color.y, color.z);
 		int posUniformLoc = glGetUniformLocation(shaderProgramID, "uPos");
-		glUniform3f(posUniformLoc, move_Pos.x + move_coord.x, move_Pos.y + move_coord.y, 0);		//wasd로 움직이는 거리+초기좌표
+		glUniform3f(posUniformLoc, move_Pos.x + move_pos.x, move_Pos.y + move_pos.y, 0);		//wasd로 움직이는 거리+초기좌표
 		glLineWidth(2.0f);
 		glDrawArrays(GL_LINE_LOOP, 0, 4);
 	}
 };
 
-Rect g_rect;
+Rectangle g_rect;
 void RECTIn(GLfloat x, GLfloat y);
 void initialize_rect()
 {
@@ -148,39 +150,76 @@ GLvoid drawScene()
 
 	glutSwapBuffers(); //--- 화면에 출력하기
 }
+
+pair<float, float> pos;
 GLvoid ClickFunc(int button, int state, int x, int y)
 {
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-		auto pos = ConvertWinToGL(x, y);
+		   pos = ConvertWinToGL(x, y);
 		for (int i = 0; i < 4; ++i) {
-			if (abs(pos.first - Rect_vertex[i].x) <= 0.02 && abs(pos.second - Rect_vertex[i].y) <= 0.02) {
-				PointCatch = TRUE;
+			if (abs(pos.first - (Rect_vertex[i].x+g_rect.move_pos.x)) <= 0.02 && abs(pos.second - (Rect_vertex[i].y+g_rect.move_pos.y)) <= 0.02) {
 				g_rect.catch_num = i;
+				PointCatch = TRUE;
 			}
 			
 		}
-		
+		if (PointiInRect(pos.first, pos.second) && !PointCatch)
+		{
+			RectCatch = TRUE;
+		}
 		
 
 	}
 	if (state == GLUT_UP) 
 	{
 		PointCatch = FALSE;
+		RectCatch = FALSE;
 	}
 }
 GLvoid Motion(int x, int y) 
 {
+		auto move_pos = ConvertWinToGL(x, y);
 	if (PointCatch) {
-		auto pos = ConvertWinToGL(x, y);
-		Rect_vertex[g_rect.catch_num].x = pos.first;
-		Rect_vertex[g_rect.catch_num].y = pos.second;
+
+		Rect_vertex[g_rect.catch_num].x = move_pos.first  - g_rect.move_pos.x;
+		Rect_vertex[g_rect.catch_num].y = move_pos.second - g_rect.move_pos.y;
+
+	}
+	if (RectCatch)
+	{
+		float dx = move_pos.first - pos.first;
+		float dy = move_pos.second - pos.second;
+
+		// g_rect.move_coord를 이동 차이만큼 업데이트합니다.
+		g_rect.move_pos.x += dx;
+		g_rect.move_pos.y += dy;
+
+		// 현재 위치를 새로운 위치로 갱신합니다.
+		pos = move_pos;
 	}
 	glutPostRedisplay();
 }
 
-void RECTIn(GLfloat x, GLfloat y) 
+bool PointiInRect(GLfloat x_pos, GLfloat y_pos)
 {
+	GLfloat x[4], y[4];
+	for (int i = 0; i < 4; i++) {
+		x[i] = Rect_vertex[i].x + g_rect.move_pos.x;
+		y[i] = Rect_vertex[i].y + g_rect.move_pos.x;
+	}
 
+	GLfloat R_area = 0.5f * abs((x[0] * y[1] + x[1] * y[2] + x[2] * y[3] + x[3] * y[0])
+		- (y[0] * x[1] + y[1] * x[2] + y[2] * x[3] + y[3] * x[0]));
+
+	GLfloat area = calculate_area(Rect_vertex[0], Rect_vertex[1], { x_pos - g_rect.move_pos.x,y_pos - g_rect.move_pos.y,0 }) + calculate_area(Rect_vertex[1], Rect_vertex[2], { x_pos - g_rect.move_pos.x,y_pos - g_rect.move_pos.y,0 })
+		+ calculate_area(Rect_vertex[2], Rect_vertex[3], { x_pos - g_rect.move_pos.x,y_pos - g_rect.move_pos.y,0 }) + calculate_area(Rect_vertex[3], Rect_vertex[1], { x_pos - g_rect.move_pos.x,y_pos - g_rect.move_pos.y,0 });
+	return area < R_area;
+}
+
+GLfloat calculate_area(vec3 f_angle, vec3 b, vec3 c)
+{
+	return (0.5f * abs((f_angle.x * b.y + b.x * c.y + c.x * f_angle.y )
+		- (f_angle.y * b.x + b.y * c.x + c.y * f_angle.x)));
 }
 void make_vertexShaders() {
 	GLchar* vertexSource;

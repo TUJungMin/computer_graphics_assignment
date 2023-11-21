@@ -11,7 +11,7 @@ struct Point {
 	float x;
 	float y;
 };
-struct Rect {
+struct Rectangle {
 	Point LD;		//좌하단 좌표
 	Point RT;		//우하단 좌표
 	Point LDGL;		//좌하단 GL변환 좌표
@@ -21,8 +21,8 @@ struct Rect {
 };
 int windowXSize = 800;
 int windowYSize = 800;
-Rect rect[4];
-void makeRect(Rect* rect)
+Rectangle rect[4];
+void makeRect(Rectangle* rect)
 {
 	rect[0].LD.x = rect[0].size - windowXSize / 2;
 	rect[0].LD.y = windowXSize - rect[0].size;
@@ -95,15 +95,15 @@ void main(int argc, char** argv) {//--- 윈도우 출력하고 콜백함수 설정 { //--- 윈
 	red = (rand() % 256) / 256.0f;
 	green = (rand() % 256) / 256.0f;
 	blue = (rand() % 256) / 256.0f;
-	for (Rect& a : rect) {
-		a.r = (rand() % 256) / 256.0f;
-		a.g = (rand() % 256) / 256.0f;
-		a.b = (rand() % 256) / 256.0f;
-		while (red == a.r && green == a.g && blue == a.b)
+	for (Rectangle& f_angle : rect) {
+		f_angle.r = (rand() % 256) / 256.0f;
+		f_angle.g = (rand() % 256) / 256.0f;
+		f_angle.b = (rand() % 256) / 256.0f;
+		while (red == f_angle.r && green == f_angle.g && blue == f_angle.b)
 		{
-			a.r = (rand() % 256) / 256.0f;
-			a.g = (rand() % 256) / 256.0f;
-			a.b = (rand() % 256) / 256.0f;
+			f_angle.r = (rand() % 256) / 256.0f;
+			f_angle.g = (rand() % 256) / 256.0f;
+			f_angle.b = (rand() % 256) / 256.0f;
 		}
 	}
 	
